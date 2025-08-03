@@ -1,6 +1,6 @@
 import React from 'react';
-import Table from '../../components/Table';
-import AdminTableRow from '../../components/AdminTableRole';
+import Table from '../components/Table';
+import AdminTableRow from '../components/AdminTableRole';
 
 
 const headers = ['Name', 'Email', 'Role'];
@@ -10,7 +10,7 @@ const data = [
   { name: 'Bebee', email: 'bebee@libverse.com', role: 'Super Admin' },
 ];
 
-const Dashboard: React.FC = () => {
+const Test: React.FC = () => {
   const handleEdit = (name: string) => {
     alert(`Edit user: ${name}`);
   };
@@ -38,4 +38,4 @@ const Dashboard: React.FC = () => {
   );
 };
 
-export default Dashboard;
+export default Test;

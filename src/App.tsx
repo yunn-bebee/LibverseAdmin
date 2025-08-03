@@ -15,6 +15,7 @@ import Login from './pages/login/Login';
 import { AuthProvider } from './contexts/AuthContext';
 import { routes } from './app/route';
 import ProtectedRoute from './middleware/ProtectedRoute';
+import Test from './pages/test';
 
 
 const App: React.FC = () => {
@@ -23,8 +24,9 @@ const App: React.FC = () => {
       <Router>
         <Routes>
           {/* Public Route */}
-          <Route path={routes.login} element={<Login />} />
 
+          <Route path={routes.test} element={<Test />} />
+          <Route path={routes.login} element={<Login />} />
           {/* Protected Admin Routes */}
           <Route element={<ProtectedRoute />}>
             <Route element={<DashboardLayout />}>
