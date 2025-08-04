@@ -21,7 +21,7 @@ import { Outlet, Link as RouterLink } from 'react-router-dom';
 import { lightTheme, darkTheme } from '../utils/CreateThemes';
 import ThemeToggle from '../components/ThemeToggle';
 
-const drawerWidth = 240;
+const drawerWidth = 200;
 const THEME_KEY = 'dashboard-theme-mode';
 
 const menuItems = [
@@ -35,7 +35,6 @@ const menuItems = [
     icon: <SettingsIcon />,
     to: '/settings',
   },
-  // ✨ Add more items here as needed
 ];
 
 const DashboardLayout: React.FC = () => {
@@ -85,10 +84,7 @@ const DashboardLayout: React.FC = () => {
       <CssBaseline />
       <Box sx={{ display: 'flex' }}>
         {/* AppBar */}
-        <AppBar
-          position="fixed"
-          sx={{ zIndex: (theme) => theme.zIndex.drawer + 1 }}
-        >
+        <AppBar position="fixed" sx={{ zIndex: (theme) => theme.zIndex.drawer + 1 }}>
           <Toolbar>
             <IconButton
               color="inherit"
@@ -105,14 +101,14 @@ const DashboardLayout: React.FC = () => {
           </Toolbar>
         </AppBar>
 
-        {/* Desktop Sidebar */}
+        {/* Sidebar for desktop */}
         <Drawer
           variant="permanent"
           sx={{
             display: { xs: 'none', sm: 'block' },
             '& .MuiDrawer-paper': {
-              boxSizing: 'border-box',
               width: drawerWidth,
+              boxSizing: 'border-box',
             },
           }}
           open
@@ -120,7 +116,7 @@ const DashboardLayout: React.FC = () => {
           {drawerContent}
         </Drawer>
 
-        {/* Mobile Sidebar */}
+        {/* Sidebar for mobile */}
         <Drawer
           variant="temporary"
           open={mobileOpen}
@@ -129,30 +125,40 @@ const DashboardLayout: React.FC = () => {
           sx={{
             display: { xs: 'block', sm: 'none' },
             '& .MuiDrawer-paper': {
-              boxSizing: 'border-box',
               width: drawerWidth,
+              boxSizing: 'border-box',
             },
           }}
         >
           {drawerContent}
         </Drawer>
 
-        {/* Main Content */}
+        {/* Main content area with proper spacing for tables */}
         <Box
           component="main"
           sx={{
             flexGrow: 1,
-            p: 3,
+            height: '100vh',
+            overflow: 'auto',
             width: { sm: `calc(100% - ${drawerWidth}px)` },
             backgroundColor:
               mode === 'light'
                 ? lightTheme.palette.background.default
                 : darkTheme.palette.background.default,
-            minHeight: '100vh',
           }}
         >
-          <Toolbar /> {/* Offset for AppBar */}
-          <Outlet />
+          <Toolbar />
+          <Box
+            sx={{
+              width: '100%',
+              maxWidth: 1280,
+              mx: 'auto',
+              px: 3,
+              py: 4,
+            }}
+          >
+            <Outlet />
+          </Box>
         </Box>
       </Box>
     </ThemeProvider>

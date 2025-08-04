@@ -7,6 +7,10 @@ export const routes = {
       index: '/admin/users',
       edit: (userId: string) => `/admin/users/${userId}`,
     },
+    books: {
+      index: '/admin/books',
+      edit: (bookId: string) => `/admin/books/${bookId}`,
+    },
     forums: {
       index: '/admin/forums',
       edit: (forumId: string) => `/admin/forums/${forumId}`,

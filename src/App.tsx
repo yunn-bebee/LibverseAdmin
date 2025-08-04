@@ -16,6 +16,7 @@ import { AuthProvider } from './contexts/AuthContext';
 import { routes } from './app/route';
 import ProtectedRoute from './middleware/ProtectedRoute';
 import Test from './pages/test';
+import BookList from './pages/books/BookList';
 
 
 const App: React.FC = () => {
@@ -33,6 +34,8 @@ const App: React.FC = () => {
               <Route path={routes.admin.dashboard} element={<Dashboard />} />
               <Route path={routes.admin.users.index} element={<UserList />} />
               <Route path={routes.admin.users.edit(':id')} element={<UserEdit />} />
+              <Route path={routes.admin.books.index} element={<BookList />} />
+              <Route path={routes.admin.books.edit(':id')} element={<UserEdit />} />
               <Route path={routes.admin.forums.index} element={<ForumList />} />
               <Route path={routes.admin.forums.edit(':id')} element={<ForumEdit />} />
               <Route path={routes.admin.events.index} element={<EventList />} />

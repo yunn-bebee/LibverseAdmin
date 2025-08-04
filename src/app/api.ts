@@ -37,7 +37,7 @@ api.interceptors.response.use(
 );
 
 export const getData = async (url: string) => {
-    // eslint-disable-next-line no-useless-catch
+   
     try {
         const response = await api.get(url);
         return response;

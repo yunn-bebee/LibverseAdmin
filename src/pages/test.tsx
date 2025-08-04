@@ -1,6 +1,6 @@
 import React from 'react';
 import Table from '../components/Table';
-import AdminTableRow from '../components/AdminTableRole';
+import AdminTableRow from '../components/AdminTableRow';
 
 
 const headers = ['Name', 'Email', 'Role'];
