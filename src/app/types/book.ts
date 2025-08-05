@@ -6,6 +6,7 @@ export interface User {
 }
 
 export interface Book {
+  
   id: string;
   library_book_id: string;
   isbn: string;

@@ -1,5 +1,4 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Box,
@@ -12,72 +11,82 @@ import {
 } from '@mui/material';
 import Table from '../../components/Table';
 import AdminTableRow from '../../components/AdminTableRow';
-import { bookService } from '../../services/BookServices';
-import type { Book } from '../../app/types/book';
+import { useBooks, useDeleteBook, useVerifyBook } from '../../hooks/useBooks';
+
+const ITEMS_PER_PAGE = 10;
 
 const BookList: React.FC = () => {
-  const [books, setBooks] = useState<Book[]>([]);
-  const [totalPages, setTotalPages] = useState(1);
   const [currentPage, setCurrentPage] = useState(1);
-  const [perPage] = useState(20);
   const [filters, setFilters] = useState<{ 
     search?: string; 
     author?: string; 
-    min_year?: number 
   }>({});
-  const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
 
   const navigate = useNavigate();
 
-  const fetchBooks = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const response = await bookService.getBooks(filters, currentPage, perPage);
-      if (!response || !response.data) throw new Error('No books data returned from API');
-      setBooks(response.data);
-      setTotalPages(10); // Replace with actual total from API
-    } catch (err: any) {
-      setError(err?.message || 'Failed to fetch books');
-    } finally {
-      setLoading(false);
-    }
-  }, [filters, currentPage, perPage]);
+  // Fetch all books
+  const { 
+    data: allBooks = [], 
+    isLoading, 
+    isError, 
+    error 
+  } = useBooks();
 
-  useEffect(() => {
-    fetchBooks();
-  }, [fetchBooks]);
+  const deleteMutation = useDeleteBook();
+  const verifyMutation = useVerifyBook();
+
+  // Filter and paginate books on the frontend
+  const { filteredBooks, totalPages, totalFilteredItems } = useMemo(() => {
+    let result = [...allBooks];
+    
+    // Apply search filter (matches title, author, or ISBN)
+    if (filters.search) {
+      const searchTerm = filters.search.toLowerCase();
+      result = result.filter(book => 
+        book.title.toLowerCase().includes(searchTerm) ||
+        book.author.toLowerCase().includes(searchTerm) ||
+        (book.isbn && book.isbn.toLowerCase().includes(searchTerm))) 
+    }
+
+    // Apply author filter
+    if (filters.author) {
+      const authorTerm = filters.author.toLowerCase();
+      result = result.filter(book => 
+        book.author.toLowerCase().includes(authorTerm))
+    }
+
+    // Calculate pagination
+    const totalItems = result.length;
+    const totalPages = Math.ceil(totalItems / ITEMS_PER_PAGE);
+    
+    // Paginate results
+    const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+    const paginatedBooks = result.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+
+    return {
+      filteredBooks: paginatedBooks,
+      totalPages,
+      totalFilteredItems: totalItems
+    };
+  }, [allBooks, filters, currentPage]);
 
   const handleFilterChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setFilters((prev) => ({
+    setFilters(prev => ({
       ...prev,
-      [name]: name === 'min_year' 
-        ? (value ? parseInt(value) : undefined) 
-        : value || undefined,
+      [name]: value || undefined,
     }));
-    setCurrentPage(1);
+    setCurrentPage(1); // Reset to first page when filters change
   };
 
   const handleDelete = async (id: string) => {
     if (window.confirm('Are you sure you want to delete this book?')) {
-      try {
-        await bookService.deleteBook(id);
-        fetchBooks();
-      } catch (err: any) {
-        setError(err?.message || 'Failed to delete book');
-      }
+      await deleteMutation.mutateAsync(id);
     }
   };
 
   const handleVerify = async (id: string) => {
-    try {
-      await bookService.verifyBook(id);
-      fetchBooks();
-    } catch (err: any) {
-      setError(err?.message || 'Failed to verify book');
-    }
+    await verifyMutation.mutateAsync(id);
   };
 
   const handlePageChange = (_event: React.ChangeEvent<unknown>, page: number) => {
@@ -86,10 +95,10 @@ const BookList: React.FC = () => {
 
   return (
     <Box sx={{ 
-      width:{xs:'100%',sm:'100%' ,md:'100%' , lg:'85%', xl:'100'},
+      width: { xs: '100%', sm: '100%', md: '100%', lg: '85%', xl: '100%' },
       maxWidth: 1280,
       ml: '200px',
-      float:'right',
+      float: 'right',
       py: 1,
       px: { xs: 2, sm: 3 },
     }}>
@@ -110,7 +119,7 @@ const BookList: React.FC = () => {
           variant="contained"
           color="primary"
           onClick={() => navigate('/admin/books/create')}
-          disabled={loading}
+          disabled={isLoading}
         >
           Add Book
         </Button>
@@ -129,7 +138,7 @@ const BookList: React.FC = () => {
           name="search"
           value={filters.search || ''}
           onChange={handleFilterChange}
-          disabled={loading}
+          disabled={isLoading}
         />
         <TextField
           fullWidth
@@ -137,65 +146,91 @@ const BookList: React.FC = () => {
           name="author"
           value={filters.author || ''}
           onChange={handleFilterChange}
-          disabled={loading}
-        />
-        <TextField
-          fullWidth
-          label="Min Publication Year"
-          name="min_year"
-          type="number"
-          value={filters.min_year ?? ''}
-          onChange={handleFilterChange}
-          disabled={loading}
-          inputProps={{ min: 0 }}
+          disabled={isLoading}
         />
       </Box>
 
-      {/* Error Alert */}
-      {error && (
-        <Alert severity="error" sx={{ mb: 2 }} onClose={() => setError(null)}>
-          {error}
+      {/* Error Alerts */}
+      {isError && (
+        <Alert severity="error" sx={{ mb: 2 }}>
+          {(error as Error)?.message || 'Failed to fetch books'}
+        </Alert>
+      )}
+      {deleteMutation.isError && (
+        <Alert severity="error" sx={{ mb: 2 }} onClose={() => deleteMutation.reset()}>
+          {(deleteMutation.error as Error)?.message || 'Failed to delete book'}
+        </Alert>
+      )}
+      {verifyMutation.isError && (
+        <Alert severity="error" sx={{ mb: 2 }} onClose={() => verifyMutation.reset()}>
+          {(verifyMutation.error as Error)?.message || 'Failed to verify book'}
         </Alert>
       )}
 
       {/* Loading Spinner */}
-      {loading ? (
+      {isLoading ? (
         <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
           <CircularProgress />
         </Box>
       ) : (
         <>
-          {/* Table */}
-          <Table headers={['ID', 'Library ID', 'Title', 'Author', 'ISBN', 'Verified', 'Added By']}>
-            {books.map((book) => (
-              <AdminTableRow
-                key={book.id}
-                row={{
-                  id: book.id,
-                  library_book_id: book.library_book_id,
-                  title: book.title,
-                  author: book.author,
-                  isbn: book.isbn || 'N/A',
-                  verified: book.verified ? 'Yes' : 'No',
-                  added_by: book.added_by?.email || 'Unknown',
-                }}
-                onEdit={() => navigate(`/admin/books/edit/${book.id}`)}
-                onDelete={() => handleDelete(book.id)}
-                onBan={() => handleVerify(book.id)}
-                showActions
-              />
-            ))}
-          </Table>
+          {/* No Results Message */}
+          {totalFilteredItems === 0 && (
+            <Box sx={{ 
+              display: 'flex', 
+              justifyContent: 'center', 
+              alignItems: 'center', 
+              height: '200px',
+              border: '1px dashed #ccc',
+              borderRadius: '4px',
+              backgroundColor: '#f9f9f9',
+              mb: 4
+            }}>
+              <Typography variant="h6" color="textSecondary">
+                {Object.values(filters).some(Boolean) 
+                  ? 'No books match your search criteria' 
+                  : 'No books available'}
+              </Typography>
+            </Box>
+          )}
 
-          {/* Pagination */}
-          <Box sx={{ mt: 4, display: 'flex', justifyContent: 'center' }}>
-            <Pagination
-              count={totalPages}
-              page={currentPage}
-              onChange={handlePageChange}
-              color="primary"
-            />
-          </Box>
+          {/* Table (only show if we have results) */}
+          {totalFilteredItems > 0 && (
+            <>
+              <Table headers={['ID', 'Library ID', 'Title', 'Author', 'ISBN', 'Verified', 'Added By']}>
+                {filteredBooks.map((book) => (
+                  <AdminTableRow
+                    key={book.id}
+                    row={{
+                      id: book.id,
+                      library_book_id: book.library_book_id,
+                      title: book.title,
+                      author: book.author,
+                      isbn: book.isbn || 'N/A',
+                      verified: book.verified ? 'Yes' : 'No',
+                      added_by: book.added_by?.email || 'Unknown',
+                    }}
+                    onEdit={() => navigate(`/admin/books/edit/${book.id}`)}
+                    onDelete={() => handleDelete(book.id)}
+                    onBan={() => handleVerify(book.id)}
+                    showActions
+                  />
+                ))}
+              </Table>
+
+              {/* Pagination */}
+              {totalPages > 1 && (
+                <Box sx={{ mt: 4, display: 'flex', justifyContent: 'center' }}>
+                  <Pagination
+                    count={totalPages}
+                    page={currentPage}
+                    onChange={handlePageChange}
+                    color="primary"
+                  />
+                </Box>
+              )}
+            </>
+          )}
         </>
       )}
     </Box>

@@ -17,37 +17,52 @@ import { routes } from './app/route';
 import ProtectedRoute from './middleware/ProtectedRoute';
 import Test from './pages/test';
 import BookList from './pages/books/BookList';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 
+// Create a single instance of queryClient
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 5 * 60 * 1000, // 5 minutes
+      gcTime: 30 * 60 * 1000, // 30 minutes
+      refetchOnWindowFocus: false,
+      retry: 1,
+    },
+  },
+});
 
 const App: React.FC = () => {
   return (
-    <AuthProvider>
-      <Router>
-        <Routes>
-          {/* Public Route */}
-
-          <Route path={routes.test} element={<Test />} />
-          <Route path={routes.login} element={<Login />} />
-          {/* Protected Admin Routes */}
-          <Route element={<ProtectedRoute />}>
-            <Route element={<DashboardLayout />}>
-              <Route path={routes.admin.dashboard} element={<Dashboard />} />
-              <Route path={routes.admin.users.index} element={<UserList />} />
-              <Route path={routes.admin.users.edit(':id')} element={<UserEdit />} />
-              <Route path={routes.admin.books.index} element={<BookList />} />
-              <Route path={routes.admin.books.edit(':id')} element={<UserEdit />} />
-              <Route path={routes.admin.forums.index} element={<ForumList />} />
-              <Route path={routes.admin.forums.edit(':id')} element={<ForumEdit />} />
-              <Route path={routes.admin.events.index} element={<EventList />} />
-              <Route path={routes.admin.events.edit(':id')} element={<EventEdit />} />
-              <Route path={routes.admin.challenges.index} element={<ChallengeList />} />
-              <Route path={routes.admin.challenges.edit(':id')} element={<ChallengeEdit />} />
-              <Route path={routes.admin.moderation} element={<ContentModeration />} />
+    <QueryClientProvider client={queryClient}>
+      <AuthProvider>
+        <Router>
+          <Routes>
+            {/* Public Route */}
+            <Route path={routes.test} element={<Test />} />
+            <Route path={routes.login} element={<Login />} />
+            {/* Protected Admin Routes */}
+            <Route element={<ProtectedRoute />}>
+              <Route element={<DashboardLayout />}>
+                <Route path={routes.admin.dashboard} element={<Dashboard />} />
+                <Route path={routes.admin.users.index} element={<UserList />} />
+                <Route path={routes.admin.users.edit(':id')} element={<UserEdit />} />
+                <Route path={routes.admin.books.index} element={<BookList />} />
+                <Route path={routes.admin.books.edit(':id')} element={<UserEdit />} />
+                <Route path={routes.admin.forums.index} element={<ForumList />} />
+                <Route path={routes.admin.forums.edit(':id')} element={<ForumEdit />} />
+                <Route path={routes.admin.events.index} element={<EventList />} />
+                <Route path={routes.admin.events.edit(':id')} element={<EventEdit />} />
+                <Route path={routes.admin.challenges.index} element={<ChallengeList />} />
+                <Route path={routes.admin.challenges.edit(':id')} element={<ChallengeEdit />} />
+                <Route path={routes.admin.moderation} element={<ContentModeration />} />
+              </Route>
             </Route>
-          </Route>
-        </Routes>
-      </Router>
-    </AuthProvider>
+          </Routes>
+        </Router>
+      </AuthProvider>
+      <ReactQueryDevtools initialIsOpen={false} />
+    </QueryClientProvider>
   );
 };
 

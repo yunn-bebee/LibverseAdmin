@@ -1,5 +1,5 @@
 /* eslint-disable react-refresh/only-export-components */
-/* eslint-disable @typescript-eslint/no-explicit-any */
+
 import { createContext, useContext, useState, type ReactNode } from 'react';
 import { postData } from '../app/api';
 

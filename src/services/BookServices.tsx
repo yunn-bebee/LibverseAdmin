@@ -4,8 +4,6 @@ import { getData, postData, putData, deleteData } from "../app/api";
 import type { Book } from "../app/types/book";
 import { url } from "../app/url";
 
-
-
 interface UrlType {
   book: {
     index: string;
@@ -19,31 +17,23 @@ interface UrlType {
 
 export const bookService = {
   getBooks: async (
-    filters: { search?: string; author?: string; min_year?: number } = {},
-    page = 1,
-    perPage = 20
-  ): Promise<{
-      data: Book[]; 
-}> => {
+    filters: { search?: string; author?: string; min_year?: number } = {}
+  ): Promise<Book[]> => {
     try {
-      const queryFilters: Record<string, string> = {
-        page: page.toString(),
-        per_page: perPage.toString(),
-      };
+      const queryFilters: Record<string, string> = {};
+      
       if (filters.search) queryFilters.search = filters.search;
       if (filters.author) queryFilters.author = filters.author;
       if (filters.min_year) queryFilters.min_year = filters.min_year.toString();
 
       const queryParams = new URLSearchParams(queryFilters).toString();
       const response = await getData(`${(url as UrlType).book.index}?${queryParams}`);
+      
       if (!response || !response.data) {
         console.error('API Response Error:', response);
         throw new Error('No books returned from API');
       }
-      return {
-        data: response.data,
-      
-      };
+      return response.data;
     } catch (error) {
       throw error;
     }
