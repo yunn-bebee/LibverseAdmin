@@ -13,11 +13,12 @@ const Table: React.FC<CustomTableProps> = ({ headers, children, actions, maxHeig
         <Box sx={{
             width: '100%',
             overflow: 'auto',
-            border: '1px solid #e0e0e0',
+            border: '1px solid',
+            borderColor: 'divider',
             borderRadius: '8px',
             backgroundColor: 'background.paper',
             maxHeight: maxHeight,
-            boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+            boxShadow: '0 2px 8px rgba(0,0,0,0.05)',
         }}>
             <MTTable
                 {...props}
@@ -31,20 +32,29 @@ const Table: React.FC<CustomTableProps> = ({ headers, children, actions, maxHeig
                         maxWidth: '300px',
                         px: 2,
                         py: 1.5,
-                        borderBottom: '1px solid rgba(224, 224, 224, 1)'
+                        borderBottom: '1px solid',
+                        borderColor: 'divider'
                     },
-                    '& .MuiTableCell-head': {
+                    '& th': {  // Target all header cells
                         fontWeight: '600',
-                        backgroundColor: '#f8fafc',
+                        backgroundColor: '#FF00C8', // Explicit magenta color
                         position: 'sticky',
                         top: 0,
                         zIndex: 2,
-                        borderBottom: '2px solid rgba(224, 224, 224, 1)'
+                        borderBottom: '2px solid',
+                        borderColor: 'divider',
+                        color: 'white', // White text for contrast
+                        padding: '12px 16px',
+                        textAlign: 'left',
+                        fontSize: '0.75rem',
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.05em',
+                        minWidth: '150px'
                     },
                     '& .sticky-actions': {
                         position: 'sticky',
                         right: 0,
-                        backgroundColor: '#f8fafc',
+                        backgroundColor: '#FF00C8', // Explicit magenta color
                         zIndex: 2,
                         backdropFilter: 'blur(4px)',
                         boxShadow: '-2px 0 4px rgba(0,0,0,0.05)'
@@ -61,30 +71,12 @@ const Table: React.FC<CustomTableProps> = ({ headers, children, actions, maxHeig
                 <thead>
                     <tr>
                         {headers.map((header) => (
-                            <th key={header} style={{
-                                padding: '12px 16px',
-                                textAlign: 'left',
-                                fontSize: '0.75rem',
-                                fontWeight: 600,
-                                color: '#64748b',
-                                textTransform: 'uppercase',
-                                letterSpacing: '0.05em',
-                                minWidth: '150px'
-                            }}>
+                            <th key={header}>
                                 {header}
                             </th>
                         ))}
                         {actions && (
-                            <th className="sticky-actions" style={{
-                                padding: '12px 16px',
-                                textAlign: 'center',
-                                fontSize: '0.75rem',
-                                fontWeight: 600,
-                                color: '#64748b',
-                                textTransform: 'uppercase',
-                                letterSpacing: '0.05em',
-                                minWidth: '150px'
-                            }}>
+                            <th className="sticky-actions" style={{ textAlign: 'center' }}>
                                 Actions
                             </th>
                         )}

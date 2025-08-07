@@ -25,7 +25,8 @@ export const url = {
     show: (bookId: string) => `${app_base_url}/book/${bookId}`,
     update: (bookId: string) => `${app_base_url}/book/${bookId}`,
     destroy: (bookId: string) => `${app_base_url}/book/${bookId}`,
-    verify: (bookId: string) => `${app_base_url}/book/${bookId}/verify`,
+    searchGoogle: `${app_base_url}/book/search/google`,
+    createFromGoogle: `${app_base_url}/book/google`,
   },
   challenge: {
     index: `${app_base_url}/challenge`,

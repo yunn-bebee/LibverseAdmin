@@ -1,45 +1,73 @@
 /* eslint-disable react-refresh/only-export-components */
-
-import { createContext, useContext, useState, type ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
 import { postData } from '../app/api';
 
-// Define the structure of the login response
-interface LoginResponse {
-  access_token: string;
-  user: {
-    id: string;
-    name: string;
-    email: string;
-    role: string;
-  };
+interface User {
+  id: string;
+  name: string;
+  email: string;
+  role: string;
+  lastLogin?: string;
 }
 
-// Update AuthContextType to use specific types instead of any
+interface LoginResponse {
+  access_token: string;
+  user: User;
+}
+
 interface AuthContextType {
-  user: LoginResponse['user'] | null;
+  user: User | null;
   login: (email: string, password: string) => Promise<void>;
   logout: () => void;
+  isAuthenticated: boolean;
 }
 
 const AuthContext = createContext<AuthContextType>(null!);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<LoginResponse['user'] | null>(null);
+  const [user, setUser] = useState<User | null>(null);
+
+  // Initialize user from localStorage on mount
+  useEffect(() => {
+    const storedUser = localStorage.getItem('user');
+    if (storedUser) {
+      try {
+        const parsedUser = JSON.parse(storedUser);
+        setUser(parsedUser);
+      } catch (error) {
+        console.error('Failed to parse user data', error);
+        localStorage.removeItem('user');
+      }
+    }
+  }, []);
 
   const login = async (email: string, password: string) => {
-    // Specify the type parameter for postData
     const response = await postData<LoginResponse>('/auth/login', { email, password });
+    const userWithLogin = { 
+      ...response.data.user,
+      lastLogin: new Date().toISOString()
+    };
+    
     localStorage.setItem('token', response.data.access_token);
-    setUser(response.data.user);
+    localStorage.setItem('user', JSON.stringify(userWithLogin));
+    setUser(userWithLogin);
   };
 
   const logout = () => {
     localStorage.removeItem('token');
+    localStorage.removeItem('user');
     setUser(null);
   };
 
+  const value = {
+    user,
+    login,
+    logout,
+    isAuthenticated: !!user
+  };
+
   return (
-    <AuthContext.Provider value={{ user, login, logout }}>
+    <AuthContext.Provider value={value}>
       {children}
     </AuthContext.Provider>
   );

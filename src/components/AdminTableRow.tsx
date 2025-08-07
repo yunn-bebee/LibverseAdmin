@@ -1,20 +1,38 @@
 import React from 'react';
-import { IconButton, Tooltip } from '@mui/material';
+import { IconButton, Tooltip, styled } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import BlockIcon from '@mui/icons-material/Block';
+import VerifiedIcon from '@mui/icons-material/Verified';
 
 interface AdminTableRowProps {
   row: Record<string, React.ReactNode>;
   onEdit?: () => void;
   onDelete?: () => void;
   onBan?: () => void;
+  onVerify?: () => void;
   showActions?: boolean;
+  verified?: boolean;
 }
 
-const AdminTableRow: React.FC<AdminTableRowProps> = ({ row, onEdit, onDelete, onBan, showActions = true }) => {
+const StyledTableRow = styled('tr')(({ theme }) => ({
+  position: 'relative',
+  '&:hover': {
+    backgroundColor: theme.palette.mode === 'light' ? 'rgba(1, 237, 196, 0.05)' : 'rgba(1, 237, 196, 0.02)',
+  },
+}));
+
+const AdminTableRow: React.FC<AdminTableRowProps> = ({ 
+  row, 
+  onEdit, 
+  onDelete, 
+  onBan, 
+  onVerify,
+  showActions = true,
+  verified = false
+}) => {
   return (
-    <tr style={{ position: 'relative', '&:hover': { backgroundColor: '#f8fafc' } }}>
+    <StyledTableRow>
       {Object.values(row).map((cell, index) => (
         <td key={index} style={{
           padding: '12px 16px',
@@ -24,30 +42,50 @@ const AdminTableRow: React.FC<AdminTableRowProps> = ({ row, onEdit, onDelete, on
           overflow: 'hidden',
           textOverflow: 'ellipsis',
           maxWidth: '300px',
-          borderBottom: '1px solid rgba(224, 224, 224, 1)'
+          borderBottom: '1px solid',
+          borderColor: 'divider'
         }}>
           {cell}
         </td>
       ))}
       {showActions && (
-        <td className="sticky-actions-cell" style={{
+        <td style={{
           padding: '8px 16px',
           textAlign: 'center',
           whiteSpace: 'nowrap',
-
-          backgroundColor: '(rgba(0, 0, 0, 0.5)',
+          borderBottom: '1px solid',
+          borderColor: 'divider'
         }}>
           <div style={{ display: 'flex', gap: '4px', justifyContent: 'center' }}>
+            {onVerify && (
+              <Tooltip title={verified ? "Verified" : "Verify"}>
+                <IconButton 
+                  onClick={onVerify} 
+                  size="small" 
+                  sx={{
+                    backgroundColor: verified ? 'rgba(1, 237, 196, 0.2)' : 'rgba(1, 237, 196, 0.1)',
+                    color: verified ? '#01EDC4' : 'text.secondary',
+                    '&:hover': {
+                      backgroundColor: 'rgba(1, 237, 196, 0.3)',
+                      transform: 'scale(1.1)'
+                    },
+                    transition: 'all 0.2s ease',
+                    boxShadow: '0 1px 2px rgba(0,0,0,0.1)'
+                }}>
+                  <VerifiedIcon fontSize="small" />
+                </IconButton>
+              </Tooltip>
+            )}
             {onEdit && (
               <Tooltip title="Edit">
                 <IconButton 
                   onClick={onEdit} 
                   size="small" 
                   sx={{
-                    backgroundColor: '#e0f2fe',
-                    color: '#0369a1',
+                    backgroundColor: 'rgba(0, 123, 255, 0.1)',
+                    color: '#007BFF',
                     '&:hover': {
-                      backgroundColor: '#bae6fd',
+                      backgroundColor: 'rgba(0, 123, 255, 0.2)',
                       transform: 'scale(1.1)'
                     },
                     transition: 'all 0.2s ease',
@@ -63,10 +101,10 @@ const AdminTableRow: React.FC<AdminTableRowProps> = ({ row, onEdit, onDelete, on
                   onClick={onDelete} 
                   size="small"
                   sx={{
-                    backgroundColor: '#fee2e2',
-                    color: '#b91c1c',
+                    backgroundColor: 'rgba(220, 53, 69, 0.1)',
+                    color: '#DC3545',
                     '&:hover': {
-                      backgroundColor: '#fecaca',
+                      backgroundColor: 'rgba(220, 53, 69, 0.2)',
                       transform: 'scale(1.1)'
                     },
                     transition: 'all 0.2s ease',
@@ -82,10 +120,10 @@ const AdminTableRow: React.FC<AdminTableRowProps> = ({ row, onEdit, onDelete, on
                   onClick={onBan} 
                   size="small"
                   sx={{
-                    backgroundColor: '#ffedd5',
-                    color: '#9a3412',
+                    backgroundColor: 'rgba(255, 193, 7, 0.1)',
+                    color: '#FFC107',
                     '&:hover': {
-                      backgroundColor: '#fed7aa',
+                      backgroundColor: 'rgba(255, 193, 7, 0.2)',
                       transform: 'scale(1.1)'
                     },
                     transition: 'all 0.2s ease',
@@ -98,7 +136,7 @@ const AdminTableRow: React.FC<AdminTableRowProps> = ({ row, onEdit, onDelete, on
           </div>
         </td>
       )}
-    </tr>
+    </StyledTableRow>
   );
 };
 

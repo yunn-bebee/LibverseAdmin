@@ -1,24 +1,54 @@
-
-export interface User {
-  id: number;
-  name: string | null;
-  email: string;
-}
-
 export interface Book {
-  
-  id: string;
-  library_book_id: string;
-  isbn: string;
+  id: number;
+  library_book_id?: string | null;
+  isbn?: string | null;
   title: string;
+  subtitle?: string | null;
   author: string;
-  cover_image: string;
-  description: string;
-  verified: boolean;
-  added_by: User;
+  co_authors?: string | null;
+  publisher?: string | null;
+  publication_year?: number | null;
+  cover_image?: string | null;
+  description?: string | null;
+  genres?: string[] | null;
+  added_by: {
+    id: number;
+    name: string;
+    email: string;
+  };
   created_at: string;
   updated_at: string;
-  forums_count?: number;
-  threads_count?: number;
-  posts_count?: number;
+}
+
+export interface GoogleBookSearchResult {
+  google_books_id: string;
+  title: string;
+  author: string;
+  cover_image: string | null;
+  description: string | null;
+  isbn: string | null;
+  publication_year: number | null;
+  exists_in_db: boolean;
+}
+
+export interface GoogleBookSearchResponse {
+  items: GoogleBookSearchResult[];
+  total: number;
+  page: number;
+  per_page: number;
+}
+export interface GoogleBookResult {
+  items: Array<{
+    google_books_id: string;
+    title: string;
+    author: string;
+    cover_image: string | null;
+    description: string | null;
+    isbn: string | null;
+    publication_year: number | null;
+    exists_in_db: boolean;
+  }>;
+  total: number;
+  page: number;
+  per_page: number;
 }

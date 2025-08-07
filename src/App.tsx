@@ -8,6 +8,8 @@ import ForumList from './pages/forums/ForumList';
 import ForumEdit from './pages/forums/ForumEdit';
 import EventList from './pages/events/EventList';
 import EventEdit from './pages/events/EventEdit';
+import BookList from './pages/books/BookList';
+import BookEdit from './pages/books/BookEdit';
 import ChallengeList from './pages/challenges/ChallengeList';
 import ChallengeEdit from './pages/challenges/ChallengeEdit';
 import ContentModeration from './pages/moderation/ContentModeration';
@@ -16,7 +18,6 @@ import { AuthProvider } from './contexts/AuthContext';
 import { routes } from './app/route';
 import ProtectedRoute from './middleware/ProtectedRoute';
 import Test from './pages/test';
-import BookList from './pages/books/BookList';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 
@@ -48,7 +49,7 @@ const App: React.FC = () => {
                 <Route path={routes.admin.users.index} element={<UserList />} />
                 <Route path={routes.admin.users.edit(':id')} element={<UserEdit />} />
                 <Route path={routes.admin.books.index} element={<BookList />} />
-                <Route path={routes.admin.books.edit(':id')} element={<UserEdit />} />
+                <Route path={routes.admin.books.edit(':id')} element={<BookEdit />} />
                 <Route path={routes.admin.forums.index} element={<ForumList />} />
                 <Route path={routes.admin.forums.edit(':id')} element={<ForumEdit />} />
                 <Route path={routes.admin.events.index} element={<EventList />} />

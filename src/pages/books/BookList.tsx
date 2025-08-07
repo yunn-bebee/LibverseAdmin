@@ -11,20 +11,18 @@ import {
 } from '@mui/material';
 import Table from '../../components/Table';
 import AdminTableRow from '../../components/AdminTableRow';
-import { useBooks, useDeleteBook, useVerifyBook } from '../../hooks/useBooks';
+import { useBooks, useDeleteBook } from '../../hooks/useBooks';
 
 const ITEMS_PER_PAGE = 10;
 
 const BookList: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
-  const [filters, setFilters] = useState<{ 
-    search?: string; 
-    author?: string; 
-  }>({});
+  const [searchTerm, setSearchTerm] = useState('');
+  const [authorFilter, setAuthorFilter] = useState('');
 
   const navigate = useNavigate();
 
-  // Fetch all books
+  // Fetch all books once (no filters passed to useBooks)
   const { 
     data: allBooks = [], 
     isLoading, 
@@ -33,26 +31,25 @@ const BookList: React.FC = () => {
   } = useBooks();
 
   const deleteMutation = useDeleteBook();
-  const verifyMutation = useVerifyBook();
 
-  // Filter and paginate books on the frontend
+  // Filter and paginate books on the client side
   const { filteredBooks, totalPages, totalFilteredItems } = useMemo(() => {
     let result = [...allBooks];
     
     // Apply search filter (matches title, author, or ISBN)
-    if (filters.search) {
-      const searchTerm = filters.search.toLowerCase();
+    if (searchTerm) {
+      const term = searchTerm.toLowerCase();
       result = result.filter(book => 
-        book.title.toLowerCase().includes(searchTerm) ||
-        book.author.toLowerCase().includes(searchTerm) ||
-        (book.isbn && book.isbn.toLowerCase().includes(searchTerm))) 
+        book.title.toLowerCase().includes(term) ||
+        book.author.toLowerCase().includes(term) ||
+        (book.isbn && book.isbn.toLowerCase().includes(term)))
     }
 
     // Apply author filter
-    if (filters.author) {
-      const authorTerm = filters.author.toLowerCase();
+    if (authorFilter) {
+      const term = authorFilter.toLowerCase();
       result = result.filter(book => 
-        book.author.toLowerCase().includes(authorTerm))
+        book.author.toLowerCase().includes(term))
     }
 
     // Calculate pagination
@@ -68,15 +65,16 @@ const BookList: React.FC = () => {
       totalPages,
       totalFilteredItems: totalItems
     };
-  }, [allBooks, filters, currentPage]);
+  }, [allBooks, searchTerm, authorFilter, currentPage]);
 
-  const handleFilterChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFilters(prev => ({
-      ...prev,
-      [name]: value || undefined,
-    }));
-    setCurrentPage(1); // Reset to first page when filters change
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchTerm(e.target.value);
+    setCurrentPage(1); // Reset to first page when search changes
+  };
+
+  const handleAuthorChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setAuthorFilter(e.target.value);
+    setCurrentPage(1); // Reset to first page when filter changes
   };
 
   const handleDelete = async (id: string) => {
@@ -85,23 +83,12 @@ const BookList: React.FC = () => {
     }
   };
 
-  const handleVerify = async (id: string) => {
-    await verifyMutation.mutateAsync(id);
-  };
-
   const handlePageChange = (_event: React.ChangeEvent<unknown>, page: number) => {
     setCurrentPage(page);
   };
 
   return (
-    <Box sx={{ 
-      width: { xs: '100%', sm: '100%', md: '100%', lg: '85%', xl: '100%' },
-      maxWidth: 1280,
-      ml: '200px',
-      float: 'right',
-      py: 1,
-      px: { xs: 2, sm: 3 },
-    }}>
+    <Box>
       {/* Header */}
       <Box sx={{ 
         width: '100%',
@@ -112,7 +99,7 @@ const BookList: React.FC = () => {
         mb: 4, 
         gap: 2 
       }}>
-        <Typography variant="h4" fontWeight={700}>
+        <Typography variant="h4" fontWeight={700} sx={{ fontSize: { xs: '1.5rem', md: '2rem' } }}>
           Books Management
         </Typography>
         <Button
@@ -135,17 +122,15 @@ const BookList: React.FC = () => {
         <TextField
           fullWidth
           label="Search by Title, Author, or ISBN"
-          name="search"
-          value={filters.search || ''}
-          onChange={handleFilterChange}
+          value={searchTerm}
+          onChange={handleSearchChange}
           disabled={isLoading}
         />
         <TextField
           fullWidth
           label="Author"
-          name="author"
-          value={filters.author || ''}
-          onChange={handleFilterChange}
+          value={authorFilter}
+          onChange={handleAuthorChange}
           disabled={isLoading}
         />
       </Box>
@@ -159,11 +144,6 @@ const BookList: React.FC = () => {
       {deleteMutation.isError && (
         <Alert severity="error" sx={{ mb: 2 }} onClose={() => deleteMutation.reset()}>
           {(deleteMutation.error as Error)?.message || 'Failed to delete book'}
-        </Alert>
-      )}
-      {verifyMutation.isError && (
-        <Alert severity="error" sx={{ mb: 2 }} onClose={() => verifyMutation.reset()}>
-          {(verifyMutation.error as Error)?.message || 'Failed to verify book'}
         </Alert>
       )}
 
@@ -187,7 +167,7 @@ const BookList: React.FC = () => {
               mb: 4
             }}>
               <Typography variant="h6" color="textSecondary">
-                {Object.values(filters).some(Boolean) 
+                {searchTerm || authorFilter
                   ? 'No books match your search criteria' 
                   : 'No books available'}
               </Typography>
@@ -197,22 +177,20 @@ const BookList: React.FC = () => {
           {/* Table (only show if we have results) */}
           {totalFilteredItems > 0 && (
             <>
-              <Table headers={['ID', 'Library ID', 'Title', 'Author', 'ISBN', 'Verified', 'Added By']}>
+              <Table headers={['ID', 'Library ID', 'Title', 'Author', 'ISBN', 'Added By', 'Actions']}>
                 {filteredBooks.map((book) => (
                   <AdminTableRow
                     key={book.id}
                     row={{
                       id: book.id,
-                      library_book_id: book.library_book_id,
+                      library_book_id: book.library_book_id || 'N/A',
                       title: book.title,
                       author: book.author,
                       isbn: book.isbn || 'N/A',
-                      verified: book.verified ? 'Yes' : 'No',
                       added_by: book.added_by?.email || 'Unknown',
                     }}
                     onEdit={() => navigate(`/admin/books/edit/${book.id}`)}
-                    onDelete={() => handleDelete(book.id)}
-                    onBan={() => handleVerify(book.id)}
+                    onDelete={() => handleDelete(book.id.toString())}
                     showActions
                   />
                 ))}
