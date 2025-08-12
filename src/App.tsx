@@ -9,7 +9,7 @@ import ForumEdit from './pages/forums/ForumEdit';
 import EventList from './pages/events/EventList';
 import EventEdit from './pages/events/EventEdit';
 import BookList from './pages/books/BookList';
-import BookEdit from './pages/books/BookEdit';
+// import BookEdit from './pages/books/BookEdit';
 import ChallengeList from './pages/challenges/ChallengeList';
 import ChallengeEdit from './pages/challenges/ChallengeEdit';
 import ContentModeration from './pages/moderation/ContentModeration';
@@ -20,6 +20,8 @@ import ProtectedRoute from './middleware/ProtectedRoute';
 import Test from './pages/test';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
+import BookCreateOrEdit from './pages/books/BookEdit';
+import NotFoundPage from './pages/NotFound';
 
 // Create a single instance of queryClient
 const queryClient = new QueryClient({
@@ -42,6 +44,9 @@ const App: React.FC = () => {
             {/* Public Route */}
             <Route path={routes.test} element={<Test />} />
             <Route path={routes.login} element={<Login />} />
+               
+            {/* 404 Catch-all Route - MUST BE LAST */}
+            <Route path="*" element={<NotFoundPage />} />
             {/* Protected Admin Routes */}
             <Route element={<ProtectedRoute />}>
               <Route element={<DashboardLayout />}>
@@ -49,7 +54,8 @@ const App: React.FC = () => {
                 <Route path={routes.admin.users.index} element={<UserList />} />
                 <Route path={routes.admin.users.edit(':id')} element={<UserEdit />} />
                 <Route path={routes.admin.books.index} element={<BookList />} />
-                <Route path={routes.admin.books.edit(':id')} element={<BookEdit />} />
+                <Route path={routes.admin.books.edit(':id')} element={<BookCreateOrEdit />} />
+                <Route path={routes.admin.books.create} element={<BookCreateOrEdit />} />
                 <Route path={routes.admin.forums.index} element={<ForumList />} />
                 <Route path={routes.admin.forums.edit(':id')} element={<ForumEdit />} />
                 <Route path={routes.admin.events.index} element={<EventList />} />

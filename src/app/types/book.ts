@@ -3,11 +3,10 @@ export interface Book {
   library_book_id?: string | null;
   isbn?: string | null;
   title: string;
-  subtitle?: string | null;
+  
   author: string;
-  co_authors?: string | null;
-  publisher?: string | null;
-  publication_year?: number | null;
+  
+
   cover_image?: string | null;
   description?: string | null;
   genres?: string[] | null;
@@ -51,4 +50,15 @@ export interface GoogleBookResult {
   total: number;
   page: number;
   per_page: number;
+}
+
+export interface GoogleBookResultItem {
+  google_books_id: string;
+  title: string;
+  author: string;
+  cover_image: string | null;
+  description: string | null;
+  isbn: string | null;
+  publication_year: number | null;
+  exists_in_db: boolean;
 }

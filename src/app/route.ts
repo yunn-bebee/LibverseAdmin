@@ -9,6 +9,7 @@ export const routes = {
     },
     books: {
       index: '/admin/books',
+      create: '/admin/books/create',
       edit: (bookId: string) => `/admin/books/${bookId}`,
     },
     forums: {

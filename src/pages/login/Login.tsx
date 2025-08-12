@@ -23,6 +23,7 @@ import { darkTheme, lightTheme } from '../../utils/CreateThemes';
 
 
 const THEME_KEY = 'dashboard-theme-mode';
+const TOKEN_KEY = 'token';
 
 const Login = () => {
     const [email, setEmail] = useState('');
@@ -37,6 +38,11 @@ const Login = () => {
         const storedMode = localStorage.getItem(THEME_KEY) as 'light' | 'dark' | null;
         if (storedMode) {
             setMode(storedMode);
+        }
+          // Check for existing auth token
+        const token = localStorage.getItem(TOKEN_KEY) || sessionStorage.getItem(TOKEN_KEY);
+        if (token) {
+            navigate('/admin');
         }
     }, []);
 

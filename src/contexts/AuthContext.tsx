@@ -1,6 +1,7 @@
 /* eslint-disable react-refresh/only-export-components */
 import { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
 import { postData } from '../app/api';
+import { url } from '../app/url';
 
 interface User {
   id: string;
@@ -42,7 +43,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const login = async (email: string, password: string) => {
-    const response = await postData<LoginResponse>('/auth/login', { email, password });
+    const response = await postData<LoginResponse>(url.auth.login, { email, password });
     const userWithLogin = { 
       ...response.data.user,
       lastLogin: new Date().toISOString()

@@ -12,6 +12,7 @@ import {
 import Table from '../../components/Table';
 import AdminTableRow from '../../components/AdminTableRow';
 import { useBooks, useDeleteBook } from '../../hooks/useBooks';
+import { routes } from '../../app/route';
 
 const ITEMS_PER_PAGE = 10;
 
@@ -189,7 +190,7 @@ const BookList: React.FC = () => {
                       isbn: book.isbn || 'N/A',
                       added_by: book.added_by?.email || 'Unknown',
                     }}
-                    onEdit={() => navigate(`/admin/books/edit/${book.id}`)}
+                    onEdit={() => navigate(routes.admin.books.edit(book.id.toString()))}
                     onDelete={() => handleDelete(book.id.toString())}
                     showActions
                   />

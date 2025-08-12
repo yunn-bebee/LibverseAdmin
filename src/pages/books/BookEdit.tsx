@@ -1,367 +1,503 @@
-// import React, { useState, useEffect } from 'react';
-// import { useNavigate, useParams } from 'react-router-dom';
-// import {
-//   Box,
-//   Typography,
-//   TextField,
-//   Button,
-//   Alert,
-//   CircularProgress,
-//   Paper,
-//   Chip,
-//   Autocomplete,
-//   Divider,
-// } from '@mui/material';
-// import { useBook, useCreateBook, useUpdateBook, useSearchGoogleBooks } from '../../hooks/useBooks';
-// import type { Book, GoogleBookResult } from '../../app/types/book';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
+import {
+  Box,
+  Typography,
+  TextField,
+  Button,
+  Alert,
+  CircularProgress,
+  Paper,
+  Card,
+  CardContent,
+  CardMedia,
+  Tabs,
+  Tab,
+  Chip,
+  IconButton,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Stack,
+} from '@mui/material';
+import {
+  Add as AddIcon,
+  Search as SearchIcon,
+  Clear as ClearIcon,
+} from '@mui/icons-material';
+import { useForm, Controller, type SubmitHandler } from 'react-hook-form';
+import { useBook, useCreateBook, useUpdateBook, useSearchGoogleBooks, useCreateFromGoogleBooks } from '../../hooks/useBooks';
+import type { GoogleBookResultItem } from '../../app/types/book';
 
-// const BookCreateOrEdit: React.FC = () => {
-//   const { id } = useParams<{ id?: string }>();
-//   const navigate = useNavigate();
-//   const isEditMode = Boolean(id);
+type BookFormData = {
+  title: string;
+  author: string;
+  isbn?: string;
+  description?: string;
+  genres?: string[];
+};
 
-//   // Data hooks
-//   const { 
-//     data: book, 
-//     isLoading: isLoadingBook, 
-//     isError: isBookError, 
-//     error: bookError 
-//   } = useBook(id || '');
-  
-//   const createMutation = useCreateBook();
-//   const updateMutation = useUpdateBook();
-//   const searchMutation = useSearchGoogleBooks();
+const BookCreateOrEdit: React.FC = () => {
+  const { id } = useParams();
+  const navigate = useNavigate();
+  const isEditMode = Boolean(id);
+  const [activeTab, setActiveTab] = useState(0);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [showGoogleResults, setShowGoogleResults] = useState(false);
+  const [selectedGoogleBook, setSelectedGoogleBook] = useState<GoogleBookResultItem | null>(null);
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
 
-//   // Form state
-//   const [formData, setFormData] = useState<Partial<Book>>({
-//     title: '',
-//     author: '',
-//     isbn: '',
-//     description: '',
-//     genres: [],
-//   });
-//   const [searchQuery, setSearchQuery] = useState('');
-//   const [coverImage, setCoverImage] = useState<File | null>(null);
+  // Form hooks
+  const {
+    control,
+    handleSubmit,
+    reset,
+    setValue,
+    formState: { errors },
+  } = useForm<BookFormData>({
+    defaultValues: {
+      title: '',
+      author: '',
+      isbn: '',
+      description: '',
+      genres: [],
+    },
+  });
 
-//   // Initialize form for edit mode
-//   useEffect(() => {
-//     if (isEditMode && book) {
-//       setFormData({
-//         title: book.title,
-//         author: book.author,
-//         isbn: book.isbn || '',
-//         description: book.description || '',
-//         genres: book.genres || [],
-//         publication_year: book.publication_year,
-//         publisher: book.publisher || '',
-//         subtitle: book.subtitle || '',
-//         co_authors: book.co_authors || '',
-//       });
-//     }
-//   }, [book, isEditMode]);
+  // Query hooks
+  const { data: existingBook } = useBook(id || '');
+  const createBookMutation = useCreateBook();
+  const updateBookMutation = useUpdateBook();
+  const searchGoogleMutation = useSearchGoogleBooks();
+  const createFromGoogleMutation = useCreateFromGoogleBooks();
 
-//   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-//     const { name, value } = e.target;
-//     setFormData(prev => ({ ...prev, [name]: value }));
-//   };
+  // Search Google Books
+  const handleSearchGoogleBooks = () => {
+    if (searchQuery.trim()) {
+      searchGoogleMutation.mutate({ query: searchQuery });
+      setShowGoogleResults(true);
+    }
+  };
 
-//   const handleGenreChange = (event: React.SyntheticEvent, newValue: string[]) => {
-//     setFormData(prev => ({ ...prev, genres: newValue }));
-//   };
+  // Select a Google Book result
+  const handleSelectGoogleBook = (book: GoogleBookResultItem) => {
+    setSelectedGoogleBook(book);
+    setValue('title', book.title);
+    setValue('author', book.author);
+    setValue('isbn', book.isbn || '');
+    setValue('description', book.description || '');
+    setActiveTab(0); // Switch back to manual form tab
+  };
 
-//   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-//     if (e.target.files?.[0]) {
-//       setCoverImage(e.target.files[0]);
-//     }
-//   };
+  // Create book from Google Books data
+  const handleCreateFromGoogle = () => {
+    if (selectedGoogleBook) {
+      createFromGoogleMutation.mutate(
+        {
+          googleBooksId: selectedGoogleBook.google_books_id,
+          additionalData: {
+            description: selectedGoogleBook.description || '',
+          },
+        },
+        {
+          onSuccess: () => {
+            navigate('/admin/books');
+          },
+        }
+      );
+    }
+  };
 
-//   const handleSubmit = async (e: React.FormEvent) => {
-//     e.preventDefault();
-    
-//     const formDataToSend = new FormData();
-    
-//     // Append all form data
-//     Object.entries(formData).forEach(([key, value]) => {
-//       if (value !== undefined && value !== null) {
-//         if (Array.isArray(value)) {
-//           formDataToSend.append(key, JSON.stringify(value));
-//         } else {
-//           formDataToSend.append(key, value.toString());
-//         }
-//       }
-//     });
-    
-//     if (coverImage) {
-//       formDataToSend.append('cover_image', coverImage);
-//     }
+  // Submit form
+  const onSubmit: SubmitHandler<BookFormData> = (data) => {
+    const formattedData = {
+      ...data,
+      genres: data.genres || [],
+    };
 
-//     try {
-//       if (isEditMode && id) {
-//         await updateMutation.mutateAsync({ id, data: formDataToSend });
-//       } else {
-//         // Convert FormData to Book object for create mutation
-//         const bookData: Partial<Book> = {
-//           title: formDataToSend.get('title') as string,
-//           author: formDataToSend.get('author') as string,
-//           isbn: formDataToSend.get('isbn') as string,
-//           description: formDataToSend.get('description') as string,
-        
-//           publication_year: formDataToSend.get('publication_year') ? 
-//             parseInt(formDataToSend.get('publication_year') as string) : undefined,
-//           publisher: formDataToSend.get('publisher') as string,
-//           subtitle: formDataToSend.get('subtitle') as string,
-//           co_authors: formDataToSend.get('co_authors') as string,
-//         };
-//         await createMutation.mutateAsync(bookData);
-//       }
-//       navigate('/admin/books');
-//     } catch (error) {
-//       console.error('Error saving book:', error);
-//     }
-//   };
+    if (isEditMode && id) {
+      updateBookMutation.mutate(
+        { id, data: formattedData },
+        {
+          onSuccess: () => {
+            navigate('/admin/books');
+          },
+        }
+      );
+    } else {
+      createBookMutation.mutate(formattedData, {
+        onSuccess: () => {
+          navigate('/admin/books');
+        },
+      });
+    }
+  };
 
-//   const handleGoogleBookSelect = (googleBook: GoogleBookResult => {
-//     setFormData(prev => ({
-//       ...prev,
-//       title: googleBook.title,
-//       author: googleBook.author,
-//       isbn: googleBook.isbn || prev.isbn,
-//       description: googleBook.description || prev.description,
-//       publication_year: googleBook.publication_year || prev.publication_year,
-//     }));
-//     setSearchQuery('');
-//   };
+  // Reset form when existing book data loads
+  useEffect(() => {
+    if (existingBook) {
+      reset({
+        title: existingBook.title,
+        author: existingBook.author,
+        isbn: existingBook.isbn || '',
+        description: existingBook.description || '',
+        genres: existingBook.genres || [],
+      });
+    }
+  }, [existingBook, reset]);
 
-//   if (isEditMode && isLoadingBook) {
-//     return (
-//       <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
-//         <CircularProgress />
-//       </Box>
-//     );
-//   }
+  return (
+    <Box sx={{ p: 3 }}>
+      <Typography variant="h4" gutterBottom>
+        {isEditMode ? 'Edit Book' : 'Add New Book'}
+      </Typography>
 
-//   if (isEditMode && isBookError) {
-//     return (
-//       <Alert severity="error" sx={{ mb: 2 }}>
-//         {bookError?.message || 'Failed to load book'}
-//       </Alert>
-//     );
-//   }
+      <Tabs value={activeTab} onChange={(_, newValue) => setActiveTab(newValue)} sx={{ mb: 3 }}>
+        <Tab label="Manual Entry" />
+        <Tab label="Import from Google Books" disabled={isEditMode} />
+      </Tabs>
 
-//   return (
-//     <Box component={Paper} sx={{ p: 4 }}>
-//       <Typography variant="h4" gutterBottom>
-//         {isEditMode ? 'Edit Book' : 'Add New Book'}
-//       </Typography>
+      {activeTab === 0 ? (
+        // Manual Entry Form
+        <Paper sx={{ p: 3 }} component="form" onSubmit={handleSubmit(onSubmit)}>
+          <Stack spacing={3}>
+            <Stack direction={{ xs: 'column', sm: 'row' }} spacing={3}>
+              <Controller
+                name="title"
+                control={control}
+                rules={{ required: 'Title is required' }}
+                render={({ field }) => (
+                  <TextField
+                    {...field}
+                    label="Title"
+                    fullWidth
+                    error={!!errors.title}
+                    helperText={errors.title?.message}
+                  />
+                )}
+              />
+              <Controller
+                name="author"
+                control={control}
+                rules={{ required: 'Author is required' }}
+                render={({ field }) => (
+                  <TextField
+                    {...field}
+                    label="Author"
+                    fullWidth
+                    error={!!errors.author}
+                    helperText={errors.author?.message}
+                  />
+                )}
+              />
+            </Stack>
 
-//       {/* Google Books Search Section */}
-//       <Box sx={{ mb: 4 }}>
-//         <Typography variant="h6" gutterBottom>
-//           Search Google Books
-//         </Typography>
-//         <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
-//           <TextField
-//             fullWidth
-//             label="Search Google Books"
-//             value={searchQuery}
-//             onChange={(e) => setSearchQuery(e.target.value)}
-//           />
-//           <Button 
-//             variant="contained" 
-//             onClick={() => searchMutation.mutate({ query: searchQuery })}
-//             disabled={!searchQuery || searchMutation.isLoading}
-//           >
-//             {searchMutation.isLoading ? <CircularProgress size={24} /> : 'Search'}
-//           </Button>
-//         </Box>
+            <Controller
+              name="isbn"
+              control={control}
+              render={({ field }) => (
+                <TextField
+                  {...field}
+                  label="ISBN"
+                  fullWidth
+                  error={!!errors.isbn}
+                  helperText={errors.isbn?.message}
+                />
+              )}
+            />
 
-//         {searchMutation.data?.items && (
-//           <Box sx={{ mb: 4 }}>
-//             {searchMutation.data.items.map((book) => (
-//               <Box 
-//                 key={book.google_books_id} 
-//                 sx={{ 
-//                   p: 2, 
-//                   mb: 1, 
-//                   border: '1px solid #eee', 
-//                   borderRadius: 1,
-//                   display: 'flex',
-//                   alignItems: 'center',
-//                   gap: 2,
-//                   cursor: 'pointer',
-//                   '&:hover': { backgroundColor: '#f5f5f5' }
-//                 }}
-//                 onClick={() => handleGoogleBookSelect(book)}
-//               >
-//                 {book.cover_image && (
-//                   <img 
-//                     src={book.cover_image} 
-//                     alt={book.title} 
-//                     style={{ width: 50, height: 75, objectFit: 'cover' }} 
-//                   />
-//                 )}
-//                 <Box>
-//                   <Typography fontWeight="bold">{book.title}</Typography>
-//                   <Typography variant="body2">{book.author}</Typography>
-//                   {book.publication_year && (
-//                     <Typography variant="body2">{book.publication_year}</Typography>
-//                   )}
-//                 </Box>
-//               </Box>
-//             ))}
-//           </Box>
-//         )}
-//       </Box>
+            <Controller
+              name="description"
+              control={control}
+              render={({ field }) => (
+                <TextField
+                  {...field}
+                  label="Description"
+                  fullWidth
+                  multiline
+                  rows={4}
+                  error={!!errors.description}
+                  helperText={errors.description?.message}
+                />
+              )}
+            />
 
-//       <Divider sx={{ my: 3 }} />
+            <Controller
+              name="genres"
+              control={control}
+              render={({ field }) => (
+                <TextField
+                  label="Genres (comma separated)"
+                  fullWidth
+                  value={field.value?.join(', ') || ''}
+                  onChange={(e) => {
+                    const genres = e.target.value
+                      .split(',')
+                      .map((genre) => genre.trim())
+                      .filter((genre) => genre.length > 0);
+                    field.onChange(genres);
+                  }}
+                  error={!!errors.genres}
+                  helperText={errors.genres?.message}
+                />
+              )}
+            />
 
-//       {/* Book Form */}
-//       <form onSubmit={handleSubmit}>
-//         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-//           <TextField
-//             fullWidth
-//             label="Title"
-//             name="title"
-//             value={formData.title}
-//             onChange={handleChange}
-//             required
-//           />
+            <Stack direction="row" spacing={2} justifyContent="flex-end">
+              <Button
+                variant="outlined"
+                onClick={() => navigate('/admin/books')}
+                disabled={
+                  createBookMutation.isPending ||
+                  updateBookMutation.isPending ||
+                  createFromGoogleMutation.isPending
+                }
+              >
+                Cancel
+              </Button>
+              <Button
+                type="submit"
+                variant="contained"
+                disabled={
+                  createBookMutation.isPending ||
+                  updateBookMutation.isPending ||
+                  createFromGoogleMutation.isPending
+                }
+              >
+                {isEditMode ? 'Update Book' : 'Create Book'}
+              </Button>
+            </Stack>
+          </Stack>
+        </Paper>
+      ) : (
+        // Google Books Import Tab
+        <Box>
+          <Paper sx={{ p: 3, mb: 3 }}>
+            <Typography variant="h6" gutterBottom>
+              Search Google Books
+            </Typography>
+            <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} mb={2}>
+              <TextField
+                fullWidth
+                label="Search by title, author, or ISBN"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                onKeyPress={(e) => {
+                  if (e.key === 'Enter') handleSearchGoogleBooks();
+                }}
+              />
+              <Button
+                variant="contained"
+                onClick={handleSearchGoogleBooks}
+                disabled={searchGoogleMutation.isPending || !searchQuery.trim()}
+                startIcon={<SearchIcon />}
+                sx={{ minWidth: 'fit-content' }}
+              >
+                Search
+              </Button>
+            </Stack>
 
-//           <TextField
-//             fullWidth
-//             label="Author"
-//             name="author"
-//             value={formData.author}
-//             onChange={handleChange}
-//             required
-//           />
+            {searchGoogleMutation.isError && (
+              <Alert severity="error" sx={{ mb: 2 }}>
+                {searchGoogleMutation.error.message || 'Failed to search Google Books'}
+              </Alert>
+            )}
+          </Paper>
 
-//           <TextField
-//             fullWidth
-//             label="Subtitle"
-//             name="subtitle"
-//             value={formData.subtitle || ''}
-//             onChange={handleChange}
-//           />
+          {showGoogleResults && (
+            <Box>
+              <Typography variant="h6" gutterBottom>
+                Search Results
+              </Typography>
 
-//           <TextField
-//             fullWidth
-//             label="Co-authors"
-//             name="co_authors"
-//             value={formData.co_authors || ''}
-//             onChange={handleChange}
-//           />
+              {searchGoogleMutation.isPending ? (
+                <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
+                  <CircularProgress />
+                </Box>
+              ) : searchGoogleMutation.data?.items?.length ? (
+                <Stack direction="row" flexWrap="wrap" gap={3}>
+                  {searchGoogleMutation.data.items.map((book) => (
+                    <Card
+                      key={book.google_books_id}
+                      sx={{
+                        width: { xs: '100%', sm: 300 },
+                        display: 'flex',
+                        flexDirection: 'column',
+                        border: selectedGoogleBook?.google_books_id === book.google_books_id
+                          ? '2px solid #1976d2'
+                          : '1px solid rgba(0, 0, 0, 0.12)',
+                        cursor: 'pointer',
+                        '&:hover': {
+                          boxShadow: 3,
+                        },
+                      }}
+                      onClick={() => handleSelectGoogleBook(book)}
+                    >
+                      <Box sx={{ display: 'flex', height: '100%' }}>
+                        {book.cover_image && (
+                          <CardMedia
+                            component="img"
+                            sx={{ width: 120, objectFit: 'cover' }}
+                            image={book.cover_image}
+                            alt={`Cover of ${book.title}`}
+                          />
+                        )}
+                        <CardContent sx={{ flex: 1 }}>
+                          <Typography variant="h6" component="div">
+                            {book.title}
+                          </Typography>
+                          <Typography color="text.secondary" gutterBottom>
+                            {book.author}
+                          </Typography>
+                          {book.isbn && (
+                            <Typography variant="body2" color="text.secondary">
+                              ISBN: {book.isbn}
+                            </Typography>
+                          )}
+                          {book.exists_in_db && (
+                            <Chip
+                              label="Already in database"
+                              color="warning"
+                              size="small"
+                              sx={{ mt: 1 }}
+                            />
+                          )}
+                        </CardContent>
+                      </Box>
+                    </Card>
+                  ))}
+                </Stack>
+              ) : (
+                <Alert severity="info">No books found matching your search</Alert>
+              )}
+            </Box>
+          )}
 
-//           <TextField
-//             fullWidth
-//             label="ISBN"
-//             name="isbn"
-//             value={formData.isbn || ''}
-//             onChange={handleChange}
-//           />
+          {selectedGoogleBook && (
+            <Paper sx={{ p: 3, mt: 3 }}>
+              <Stack direction="row" justifyContent="space-between" alignItems="center">
+                <Typography variant="h6">Selected Book</Typography>
+                <IconButton onClick={() => setSelectedGoogleBook(null)}>
+                  <ClearIcon />
+                </IconButton>
+              </Stack>
+              <Stack direction={{ xs: 'column', md: 'row' }} spacing={2} sx={{ mt: 1 }}>
+                {selectedGoogleBook.cover_image && (
+                  <Box sx={{ width: { xs: '100%', md: 200 }, flexShrink: 0 }}>
+                    <img
+                      src={selectedGoogleBook.cover_image}
+                      alt={`Cover of ${selectedGoogleBook.title}`}
+                      style={{ width: '100%', height: 'auto' }}
+                    />
+                  </Box>
+                )}
+                <Box sx={{ flex: 1 }}>
+                  <Typography variant="h6">{selectedGoogleBook.title}</Typography>
+                  <Typography color="text.secondary" gutterBottom>
+                    {selectedGoogleBook.author}
+                  </Typography>
+                  {selectedGoogleBook.isbn && (
+                    <Typography variant="body2" color="text.secondary">
+                      ISBN: {selectedGoogleBook.isbn}
+                    </Typography>
+                  )}
+                  {selectedGoogleBook.description && (
+                    <Box sx={{ mt: 2 }}>
+                      <Typography variant="subtitle2">Description:</Typography>
+                      <Typography variant="body2">
+                        {selectedGoogleBook.description.length > 300
+                          ? `${selectedGoogleBook.description.substring(0, 300)}...`
+                          : selectedGoogleBook.description}
+                      </Typography>
+                    </Box>
+                  )}
+                </Box>
+              </Stack>
+              <Box sx={{ mt: 3, display: 'flex', justifyContent: 'flex-end' }}>
+                <Button
+                  variant="contained"
+                  onClick={() => setShowConfirmDialog(true)}
+                  disabled={createFromGoogleMutation.isPending}
+                  startIcon={<AddIcon />}
+                >
+                  Create Book from This
+                </Button>
+              </Box>
+            </Paper>
+          )}
+        </Box>
+      )}
 
-//           <TextField
-//             fullWidth
-//             label="Publisher"
-//             name="publisher"
-//             value={formData.publisher || ''}
-//             onChange={handleChange}
-//           />
+      {/* Loading indicator for mutations */}
+      {(createBookMutation.isPending ||
+        updateBookMutation.isPending ||
+        createFromGoogleMutation.isPending) && (
+        <Box
+          sx={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: 'rgba(0, 0, 0, 0.5)',
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            zIndex: 9999,
+          }}
+        >
+          <CircularProgress color="primary" size={60} />
+        </Box>
+      )}
 
-//           <TextField
-//             fullWidth
-//             label="Publication Year"
-//             name="publication_year"
-//             type="number"
-//             value={formData.publication_year || ''}
-//             onChange={handleChange}
-//             inputProps={{ min: 1900, max: new Date().getFullYear() }}
-//           />
+      {/* Error alerts */}
+      {createBookMutation.isError && (
+        <Alert severity="error" sx={{ mt: 2 }} onClose={() => createBookMutation.reset()}>
+          {createBookMutation.error.message || 'Failed to create book'}
+        </Alert>
+      )}
+      {updateBookMutation.isError && (
+        <Alert severity="error" sx={{ mt: 2 }} onClose={() => updateBookMutation.reset()}>
+          {updateBookMutation.error.message || 'Failed to update book'}
+        </Alert>
+      )}
+      {createFromGoogleMutation.isError && (
+        <Alert severity="error" sx={{ mt: 2 }} onClose={() => createFromGoogleMutation.reset()}>
+          {createFromGoogleMutation.error.message || 'Failed to create book from Google Books'}
+        </Alert>
+      )}
 
-//           <Autocomplete
-//             multiple
-//             freeSolo
-//             options={[]}
-//             value={formData.genres || []}
-//             onChange={handleGenreChange}
-//             renderTags={(value: string[], getTagProps) =>
-//               value.map((option: string, index: number) => (
-//                 <Chip label={option} {...getTagProps({ index })} />
-//               ))
-//             }
-//             renderInput={(params) => (
-//               <TextField
-//                 {...params}
-//                 label="Genres"
-//                 placeholder="Add genres"
-//               />
-//             )}
-//           />
+      {/* Confirmation Dialog */}
+      <Dialog
+        open={showConfirmDialog}
+        onClose={() => setShowConfirmDialog(false)}
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogTitle>Confirm Book Creation</DialogTitle>
+        <DialogContent>
+          <Typography>
+            Are you sure you want to create a new book record based on the selected Google Books
+            data?
+          </Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setShowConfirmDialog(false)}>Cancel</Button>
+          <Button
+            onClick={() => {
+              setShowConfirmDialog(false);
+              handleCreateFromGoogle();
+            }}
+            variant="contained"
+            autoFocus
+          >
+            Confirm
+          </Button>
+        </DialogActions>
+      </Dialog>
+    </Box>
+  );
+};
 
-//           <TextField
-//             fullWidth
-//             multiline
-//             rows={4}
-//             label="Description"
-//             name="description"
-//             value={formData.description || ''}
-//             onChange={handleChange}
-//           />
-
-//           <Box>
-//             <Typography variant="subtitle1" gutterBottom>
-//               Cover Image
-//             </Typography>
-//             <input
-//               type="file"
-//               accept="image/*"
-//               onChange={handleFileChange}
-//             />
-//             {isEditMode && book?.cover_image && !coverImage && (
-//               <Box sx={{ mt: 2 }}>
-//                 <Typography variant="caption">Current Image:</Typography>
-//                 <img 
-//                   src={`/storage/${book.cover_image}`} 
-//                   alt="Current cover" 
-//                   style={{ maxWidth: '150px', display: 'block', marginTop: '8px' }} 
-//                 />
-//               </Box>
-//             )}
-//           </Box>
-
-//           <Box sx={{ display: 'flex', gap: 2, mt: 3 }}>
-//             <Button
-//               type="submit"
-//               variant="contained"
-//               color="primary"
-//               disabled={createMutation.isLoading || updateMutation.isLoading}
-//             >
-//               {(createMutation.isLoading || updateMutation.isLoading) ? (
-//                 <CircularProgress size={24} />
-//               ) : isEditMode ? 'Update Book' : 'Add Book'}
-//             </Button>
-//             <Button
-//               variant="outlined"
-//               color="secondary"
-//               onClick={() => navigate('/admin/books')}
-//             >
-//               Cancel
-//             </Button>
-//           </Box>
-//         </Box>
-//       </form>
-
-//       {(createMutation.isError || updateMutation.isError) && (
-//         <Alert severity="error" sx={{ mt: 2 }}>
-//           {(
-//             (createMutation.error as Error)?.message || 
-//             (updateMutation.error as Error)?.message || 
-//             'Failed to save book'
-//           )}
-//         </Alert>
-//       )}
-//     </Box>
-//   );
-// };
-
-// export default BookCreateOrEdit;
+export default BookCreateOrEdit;
