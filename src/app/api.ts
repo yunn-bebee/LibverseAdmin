@@ -9,6 +9,42 @@ const api: AxiosInstance = axios.create({
     }
 })
 
+export interface ApiResponse<T> {
+  success: boolean;
+  message: string;
+  data: T;
+  errors: Record<string, string[]>;
+  meta: {
+    pagination: {
+      count: number;
+      current_page: number;
+      links: {
+        first: string;
+        last: string;
+        next: string | null;
+        prev: string | null;
+      };
+      per_page: number;
+      total: number;
+      total_pages: number;
+    };
+    status: number;
+    timestamp: string;
+  };
+}
+
+export interface ApiError {
+    message?: string;
+    success?: boolean;
+    data?: null;
+    errors?: Record<string, string[]>;
+    meta?: {
+        timestamp: string;
+        status: number;
+    };
+}
+
+// Request interceptor
 api.interceptors.request.use((config) => {
     const AccessToken = localStorage.getItem("token") ?? sessionStorage.getItem("token");
     if (AccessToken) {
@@ -17,10 +53,11 @@ api.interceptors.request.use((config) => {
     return config;
 });
 
+// Response interceptor
 api.interceptors.response.use(
-    (response) => response.data,
+    (response) => response, 
     (error) => {
-        if (!error.response) throw error; // Handle cases where there's no response (e.g., network error)
+        if (!error.response) throw error;
 
         const { status, data } = error.response as { status: number; data: ApiError };
 
@@ -28,23 +65,29 @@ api.interceptors.response.use(
             localStorage.removeItem('token');
         }
 
-        if (status === 404) {
-            // Handle 404 error
-        }
-
-        throw data; // Throw the structured error response
+        throw data;
     }
 );
 
+// Unified data fetching functions
 export const getData = async (url: string) => {
-   
-    try {
-        const response = await api.get(url);
-        return response;
-    } catch (error) {
-        throw error;
+    const response = await api.get(url);
+    return response.data;
+};
+// Unified data fetching functions
+export const getDatawithMetaData = async <T>(url: string): Promise<ApiResponse<T>> => {
+    const response = await api.get<ApiResponse<T>>(url);
+    return response.data;
+};
+
+api.interceptors.request.use((config) => {
+    const AccessToken = localStorage.getItem("token") ?? sessionStorage.getItem("token");
+    if (AccessToken) {
+        config.headers.Authorization = `Bearer ${AccessToken}`;
     }
-} 
+    return config;
+});
+
 export const postData = async <T>(url: string, data: object): Promise<AxiosResponse<T>> => {
    
     

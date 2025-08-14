@@ -22,6 +22,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import BookCreateOrEdit from './pages/books/BookEdit';
 import NotFoundPage from './pages/NotFound';
+import ForumView from './pages/forums/ForumView';
 
 // Create a single instance of queryClient
 const queryClient = new QueryClient({
@@ -58,6 +59,7 @@ const App: React.FC = () => {
                 <Route path={routes.admin.books.create} element={<BookCreateOrEdit />} />
                 <Route path={routes.admin.forums.index} element={<ForumList />} />
                 <Route path={routes.admin.forums.edit(':id')} element={<ForumEdit />} />
+                <Route path={routes.admin.forums.get(':id')} element={<ForumView />} />
                 <Route path={routes.admin.events.index} element={<EventList />} />
                 <Route path={routes.admin.events.edit(':id')} element={<EventEdit />} />
                 <Route path={routes.admin.challenges.index} element={<ChallengeList />} />

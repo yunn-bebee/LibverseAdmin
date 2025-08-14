@@ -2,7 +2,13 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import type { Book, GoogleBookResult } from '../app/types/book';
 import { bookService } from '../services/BookServices';
 
-export function useBooks(filters = {}) {
+// Define filters type for better type safety
+type BookFilters = {
+  search?: string;
+  author?: string;
+};
+
+export function useBooks(filters: BookFilters = {}) {
   return useQuery<Book[], Error>({
     queryKey: ['books', filters],
     queryFn: () => bookService.getBooks(filters),
@@ -13,7 +19,7 @@ export function useBook(id: string) {
   return useQuery<Book, Error>({
     queryKey: ['book', id],
     queryFn: () => bookService.getBook(id),
-    enabled: !!id, // Only run query if id exists
+    enabled: !!id,
   });
 }
 
@@ -53,7 +59,6 @@ export function useDeleteBook() {
 
 export function useSearchGoogleBooks() {
   return useMutation<GoogleBookResult, Error, { 
-    loading?: boolean;
     query: string; 
     page?: number; 
     perPage?: number 

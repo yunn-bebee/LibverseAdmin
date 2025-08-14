@@ -14,7 +14,10 @@ export const routes = {
     },
     forums: {
       index: '/admin/forums',
-      edit: (forumId: string) => `/admin/forums/${forumId}`,
+ 
+      create: '/admin/forums/create',
+      edit: (forumId: string) => `/admin/forums/edit/${forumId}`,
+      get: (forumId: string) => `/admin/forums/${forumId}`,
     },
     events: {
       index: '/admin/events',
