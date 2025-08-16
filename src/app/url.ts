@@ -42,15 +42,18 @@ export const url = {
     update: (eventId: string) => `${app_base_url}/event/${eventId}`,
     destroy: (eventId: string) => `${app_base_url}/event/${eventId}`,
   },
-  forum: {
-    index: `${app_base_url}/forum`,
-    store: `${app_base_url}/forum`,
-    show: (forumId: string) => `${app_base_url}/forum/${forumId}`,
-    update: (forumId: string) => `${app_base_url}/forum/${forumId}`,
-    destroy: (forumId: string) => `${app_base_url}/forum/${forumId}`,
+ forum: {
+    index: `${app_base_url}/forums`,
+    store: `${app_base_url}/forums`,
+    show: (forumId: string) => `${app_base_url}/forums/${forumId}`,
+    update: (forumId: string) => `${app_base_url}/forums/${forumId}`,
+    destroy: (forumId: string) => `${app_base_url}/forums/${forumId}`,
+    togglePublic: (forumId: string) => `${app_base_url}/forums/${forumId}/toggle-public`,
     threads: {
-      index: (forumId: string) => `${app_base_url}/forum/${forumId}/threads`,
-      store: (forumId: string) => `${app_base_url}/forum/${forumId}/threads`,
+      index: (forumId: string) => `${app_base_url}/forums/${forumId}/threads`,
+      store: (forumId: string) => `${app_base_url}/forums/${forumId}/threads`,
+      togglePin: (forumId: string, threadId: string) => `${app_base_url}/forums/${forumId}/threads/${threadId}/toggle-pin`,
+      toggleLock: (forumId: string, threadId: string) => `${app_base_url}/forums/${forumId}/threads/${threadId}/toggle-lock`,
     },
   },
   mention: {

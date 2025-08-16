@@ -1,7 +1,6 @@
-
 import { url } from "../app/url";
 import type { Forum, Thread } from "../app/types/forum";
-import { getData ,postData ,putData , deleteData, getDatawithMetaData } from "../app/api";
+import { getData, postData, putData, deleteData, getDatawithMetaData } from "../app/api";
 
 export const forumService = {
   getForums: async (
@@ -59,6 +58,27 @@ export const forumService = {
     const response = await postData<Thread>(
       url.forum.threads.store(forumId),
       data
+    );
+    return response.data;
+  },
+
+  togglePublic: async (forumId: string): Promise<Forum> => {
+    const response = await postData<Forum>(url.forum.togglePublic(forumId), {});
+    return response.data;
+  },
+
+  toggleThreadPin: async (forumId: string, threadId: string): Promise<Thread> => {
+    const response = await postData<Thread>(
+      url.forum.threads.togglePin(forumId, threadId),
+      {}
+    );
+    return response.data;
+  },
+
+  toggleThreadLock: async (forumId: string, threadId: string): Promise<Thread> => {
+    const response = await postData<Thread>(
+      url.forum.threads.toggleLock(forumId, threadId),
+      {}
     );
     return response.data;
   },

@@ -67,3 +67,36 @@ export function useCreateThread(forumId: string) {
     },
   });
 }
+
+export function useToggleForumPublic() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (forumId: string) => forumService.togglePublic(forumId),
+    onSuccess: (_, forumId) => {
+      queryClient.invalidateQueries({ queryKey: ['forums'] });
+      queryClient.invalidateQueries({ queryKey: ['forum', forumId] });
+    },
+  });
+}
+
+export function useToggleThreadPin(forumId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (threadId: string) => 
+      forumService.toggleThreadPin(forumId, threadId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['threads', forumId] });
+    },
+  });
+}
+
+export function useToggleThreadLock(forumId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (threadId: string) => 
+      forumService.toggleThreadLock(forumId, threadId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['threads', forumId] });
+    },
+  });
+}

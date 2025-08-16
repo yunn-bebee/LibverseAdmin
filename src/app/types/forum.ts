@@ -1,33 +1,27 @@
 export interface Forum {
-  is_public?: boolean;
-  posts_count: number;
-  id: string;
+  id: number;
   name: string;
-  description: string;
+  slug: string;
+  description?: string;
   category: string;
-  created_by: {
-    id: string;
-    username: string;
-  };
+  is_public: boolean;
+  created_by: { id: number; name: string };
+  book?: { id: number; title: string };
   threads_count: number;
   created_at: string;
   updated_at: string;
 }
 
 export interface Thread {
-  replies_count: ReactNode;
-  added_by: any;
-  id: string;
+  id: number;
   title: string;
   content: string;
-  user_id: string;
-  forum_id: string;
+  post_type: string;
+  is_pinned: boolean;
+  is_locked: boolean;
+  user: { id: number; name: string };
+  book?: { id: number; title: string };
   posts_count: number;
   created_at: string;
   updated_at: string;
-  user: {
-    id: string;
-    name: string;
-    avatar?: string;
-  };
 }
