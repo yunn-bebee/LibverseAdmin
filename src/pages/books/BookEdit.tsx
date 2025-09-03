@@ -36,6 +36,8 @@ type BookFormData = {
   isbn?: string;
   description?: string;
   genres?: string[];
+  cover_image?: string;
+  image_links?: string;
 };
 
 const BookCreateOrEdit: React.FC = () => {
@@ -62,6 +64,7 @@ const BookCreateOrEdit: React.FC = () => {
       isbn: '',
       description: '',
       genres: [],
+      cover_image: '',
     },
   });
 
@@ -87,7 +90,9 @@ const BookCreateOrEdit: React.FC = () => {
     setValue('author', book.author);
     setValue('isbn', book.isbn || '');
     setValue('description', book.description || '');
-    setActiveTab(0); // Switch back to manual form tab
+    setValue('cover_image', book.cover_image || '');
+    setValue('genres', book.genres || []);
+    setActiveTab(0); // Switch to manual form tab
   };
 
   // Create book from Google Books data
@@ -98,6 +103,8 @@ const BookCreateOrEdit: React.FC = () => {
           googleBooksId: selectedGoogleBook.google_books_id,
           additionalData: {
             description: selectedGoogleBook.description || '',
+            cover_image: selectedGoogleBook.cover_image || '',
+            genres: selectedGoogleBook.genres || [],
           },
         },
         {
@@ -111,21 +118,44 @@ const BookCreateOrEdit: React.FC = () => {
 
   // Submit form
   const onSubmit: SubmitHandler<BookFormData> = (data) => {
-    const formattedData = {
+    let formattedData = {
       ...data,
       genres: data.genres || [],
+      ...(selectedGoogleBook ? {} : { cover_image: data.cover_image || undefined }),
     };
 
     if (isEditMode && id) {
+      // Update existing book
       updateBookMutation.mutate(
         { id, data: formattedData },
         {
+          
           onSuccess: () => {
             navigate('/admin/books');
           },
         }
       );
+    } else if (selectedGoogleBook) {
+      // Use createFromGoogleBooks mutation if a Google Book is selected 
+       formattedData = {
+            ...formattedData,
+           image_links: data.cover_image || undefined
+          };
+      createFromGoogleMutation.mutate(
+        {
+        
+          googleBooksId: selectedGoogleBook.google_books_id,
+          additionalData: formattedData,
+        },
+        {
+          onSuccess: () => {
+            setSelectedGoogleBook(null); // Clear selected book after creation
+            navigate('/admin/books');
+          },
+        }
+      );
     } else {
+      // Use createBook mutation for manual entry without Google Books
       createBookMutation.mutate(formattedData, {
         onSuccess: () => {
           navigate('/admin/books');
@@ -143,7 +173,9 @@ const BookCreateOrEdit: React.FC = () => {
         isbn: existingBook.isbn || '',
         description: existingBook.description || '',
         genres: existingBook.genres || [],
+        cover_image: existingBook.cover_image || '',
       });
+      setSelectedGoogleBook(null); // Clear Google Book selection when editing
     }
   }, [existingBook, reset]);
 
@@ -193,19 +225,34 @@ const BookCreateOrEdit: React.FC = () => {
               />
             </Stack>
 
-            <Controller
-              name="isbn"
-              control={control}
-              render={({ field }) => (
-                <TextField
-                  {...field}
-                  label="ISBN"
-                  fullWidth
-                  error={!!errors.isbn}
-                  helperText={errors.isbn?.message}
-                />
-              )}
-            />
+            <Stack direction={{ xs: 'column', sm: 'row' }} spacing={3}>
+              <Controller
+                name="isbn"
+                control={control}
+                render={({ field }) => (
+                  <TextField
+                    {...field}
+                    label="ISBN"
+                    fullWidth
+                    error={!!errors.isbn}
+                    helperText={errors.isbn?.message}
+                  />
+                )}
+              />
+              <Controller
+                name="cover_image"
+                control={control}
+                render={({ field }) => (
+                  <TextField
+                    {...field}
+                    label="Cover Image URL"
+                    fullWidth
+                    error={!!errors.cover_image}
+                    helperText={errors.cover_image?.message || 'Enter a valid image URL'}
+                  />
+                )}
+              />
+            </Stack>
 
             <Controller
               name="description"
@@ -402,6 +449,11 @@ const BookCreateOrEdit: React.FC = () => {
                       ISBN: {selectedGoogleBook.isbn}
                     </Typography>
                   )}
+                  {selectedGoogleBook.cover_image && (
+                    <Typography variant="body2" color="text.secondary">
+                      Cover Image: <a href={selectedGoogleBook.cover_image} target="_blank" rel="noopener noreferrer">View</a>
+                    </Typography>
+                  )}
                   {selectedGoogleBook.description && (
                     <Box sx={{ mt: 2 }}>
                       <Typography variant="subtitle2">Description:</Typography>
@@ -429,7 +481,6 @@ const BookCreateOrEdit: React.FC = () => {
         </Box>
       )}
 
-      {/* Loading indicator for mutations */}
       {(createBookMutation.isPending ||
         updateBookMutation.isPending ||
         createFromGoogleMutation.isPending) && (
@@ -451,7 +502,6 @@ const BookCreateOrEdit: React.FC = () => {
         </Box>
       )}
 
-      {/* Error alerts */}
       {createBookMutation.isError && (
         <Alert severity="error" sx={{ mt: 2 }} onClose={() => createBookMutation.reset()}>
           {createBookMutation.error.message || 'Failed to create book'}
@@ -468,7 +518,6 @@ const BookCreateOrEdit: React.FC = () => {
         </Alert>
       )}
 
-      {/* Confirmation Dialog */}
       <Dialog
         open={showConfirmDialog}
         onClose={() => setShowConfirmDialog(false)}

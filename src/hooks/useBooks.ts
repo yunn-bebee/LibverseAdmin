@@ -75,7 +75,8 @@ export function useCreateFromGoogleBooks() {
     googleBooksId: string; 
     additionalData?: { 
       description?: string; 
-      genres?: string[] 
+      genres?: string[]; 
+      cover_image?: string; 
     } 
   }>({
     mutationFn: ({ googleBooksId, additionalData }) => 

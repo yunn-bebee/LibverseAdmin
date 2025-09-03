@@ -1,13 +1,12 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useDeleteForum, useForums } from '../../hooks/useForum';
+import { useDeleteForum, useForums, useToggleForumPublic } from '../../hooks/useForum';
 import { 
   Box, 
   Card, 
   CardContent, 
   Typography, 
-  
   Stack, 
   TextField, 
   Select, 
@@ -47,21 +46,11 @@ interface ForumResponse {
   data: Forum[];
   errors: Record<string, string[]>;
   meta: {
-    pagination: {
-      count: number;
-      current_page: number;
-      links: {
-        first: string;
-        last: string;
-        next: string | null;
-        prev: string | null;
-      };
-      per_page: number;
-      total: number;
-      total_pages: number;
-    };
-    status: number;
-    timestamp: string;
+    current_page: number;
+    per_page: number;
+    total: number;
+    total_pages: number;
+    [key: string]: any;
   };
 }
 
@@ -71,7 +60,7 @@ const ForumList = () => {
   const [filters, setFilters] = useState({
     category: '',
     search: '',
-    showHidden: false
+    is_public: undefined as boolean | undefined
   });
   const [page, setPage] = useState(1);
   const [perPage, setPerPage] = useState(10);
@@ -80,14 +69,19 @@ const ForumList = () => {
   const [forumToDelete, setForumToDelete] = useState<Forum | null>(null);
   
   const { data, isLoading, isError, error } = useForums(
-    { ...filters, page }, 
+    { 
+      category: filters.category, 
+      search: filters.search, 
+      is_public: filters.is_public 
+    }, 
     perPage
   );
 
+  const { mutate: togglePublic, isPending: isTogglingPublic } = useToggleForumPublic();
+
   const forumResponse = data as ForumResponse;
   const forums = forumResponse?.data || [];
-  const pagination = forumResponse?.meta?.pagination || {
-    count: 0,
+  const pagination = forumResponse?.meta.pagination || {
     current_page: 1,
     per_page: perPage,
     total: 0,
@@ -114,12 +108,18 @@ const ForumList = () => {
   };
 
   const handleEditForum = (id: string) => {
-    navigate(`/admin/forums/edit/${id}`);
+    navigate(`/admin/forums/edit/${id}`); // Use routes.admin.forums.edit(id) if available
   };
 
   const toggleVisibility = (forum: Forum) => {
-    // TODO: Implement visibility toggle
-    console.log('Toggle visibility for forum:', forum.id);
+    togglePublic(forum.id.toString(), {
+      onSuccess: () => {
+        console.log(`Toggled visibility for forum ${forum.id} to ${!forum.is_public}`);
+      },
+      onError: (error) => {
+        console.error('Failed to toggle visibility:', error);
+      }
+    });
   };
 
   const openDeleteDialog = (forum: Forum) => {
@@ -132,10 +132,10 @@ const ForumList = () => {
     setForumToDelete(null);
   };
 
-    const deleteMutation = useDeleteForum();
+  const deleteMutation = useDeleteForum();
   const confirmDelete = async () => {
     if (forumToDelete) {
-       await deleteMutation.mutateAsync(forumToDelete.id);
+      await deleteMutation.mutateAsync(forumToDelete.id.toString());
       closeDeleteDialog();
     }
   };
@@ -145,7 +145,7 @@ const ForumList = () => {
   };
 
   const toggleShowHidden = () => {
-    setFilters({ ...filters, showHidden: !filters.showHidden });
+    setFilters({ ...filters, is_public: filters.is_public === false ? undefined : false });
     setPage(1);
   };
 
@@ -199,15 +199,15 @@ const ForumList = () => {
             No Forums Found
           </Typography>
           <Typography variant="body1" color="textSecondary" sx={{ mb: 3 }}>
-            {filters.search || filters.category || filters.showHidden 
+            {filters.search || filters.category || filters.is_public === false 
               ? 'No forums match your current filters.'
               : 'There are no forums available yet.'}
           </Typography>
           <Stack direction="row" spacing={2} justifyContent="center">
-            {(filters.search || filters.category || filters.showHidden) && (
+            {(filters.search || filters.category || filters.is_public === false) && (
               <Button 
                 variant="outlined" 
-                onClick={() => setFilters({ category: '', search: '', showHidden: false })}
+                onClick={() => setFilters({ category: '', search: '', is_public: undefined })}
               >
                 Clear Filters
               </Button>
@@ -267,16 +267,16 @@ const ForumList = () => {
             <Tune />
           </IconButton>
         </Tooltip>
-        <Tooltip title={filters.showHidden ? "Hide hidden forums" : "Show hidden forums"}>
+        <Tooltip title={filters.is_public === false ? "Show all forums" : "Show private forums"}>
           <IconButton 
             onClick={toggleShowHidden}
             sx={{ 
               border: `1px solid ${theme.palette.divider}`,
               borderRadius: 1,
-              backgroundColor: filters.showHidden ? theme.palette.action.selected : 'inherit'
+              backgroundColor: filters.is_public === false ? theme.palette.action.selected : 'inherit'
             }}
           >
-            {filters.showHidden ? <VisibilityOff /> : <Visibility />}
+            {filters.is_public === false ? <Visibility /> : <VisibilityOff />}
           </IconButton>
         </Tooltip>
       </Stack>
@@ -347,53 +347,56 @@ const ForumList = () => {
             </Typography>
           </Box>
           
-        <Stack spacing={2}>
-  {forums.map((forum) => (
-    <Card key={forum.id}>
-      <CardContent>
-        <Stack direction="row" justifyContent="space-between">
-          {/* Clickable area for navigation */}
-          <Box 
-            sx={{ 
-              flexGrow: 1,
-              cursor: 'pointer',
-              '&:hover': {
-                backgroundColor: 'action.hover',
-                borderRadius: 1
-              }
-            }}
-            onClick={() => navigate(routes.admin.forums.get(forum.id))}
-          >
-            <Typography variant="h6">{forum.name}</Typography>
-            <Typography variant="body2" color="text.secondary">
-              {forum.category} • {forum.threads_count} threads • 
-              {forum.is_public ? ' Public' : ' Private'}
-            </Typography>
-          </Box>
-          
-          {/* Action buttons (not clickable for navigation) */}
-          <Stack direction="row" spacing={1} onClick={(e) => e.stopPropagation()}>
-            <Tooltip title="Edit">
-              <IconButton onClick={() => handleEditForum(forum.id)}>
-                <Edit />
-              </IconButton>
-            </Tooltip>
-            <Tooltip title={forum.is_public ? 'Make Private' : 'Make Public'}>
-              <IconButton onClick={() => toggleVisibility(forum)}>
-                {forum.is_public ? <VisibilityOff /> : <Visibility />}
-              </IconButton>
-            </Tooltip>
-            <Tooltip title="Delete">
-              <IconButton onClick={() => openDeleteDialog(forum)}>
-                <Delete color="error" />
-              </IconButton>
-            </Tooltip>
+          <Stack spacing={2}>
+            {forums.map((forum) => (
+              <Card key={forum.id}>
+                <CardContent>
+                  <Stack direction="row" justifyContent="space-between">
+                    {/* Clickable area for navigation */}
+                    <Box 
+                      sx={{ 
+                        flexGrow: 1,
+                        cursor: 'pointer',
+                        '&:hover': {
+                          backgroundColor: 'action.hover',
+                          borderRadius: 1
+                        }
+                      }}
+                      onClick={() => navigate(routes.admin.forums.get(forum.id.toString()))}
+                    >
+                      <Typography variant="h6">{forum.name}</Typography>
+                      <Typography variant="body2" color="text.secondary">
+                        {forum.category} • {forum.threads_count} threads • 
+                        {forum.is_public ? ' Public' : ' Private'}
+                      </Typography>
+                    </Box>
+                    
+                    {/* Action buttons (not clickable for navigation) */}
+                    <Stack direction="row" spacing={1} onClick={(e) => e.stopPropagation()}>
+                      <Tooltip title="Edit">
+                        <IconButton onClick={() => handleEditForum(forum.id.toString())}>
+                          <Edit />
+                        </IconButton>
+                      </Tooltip>
+                      <Tooltip title={forum.is_public ? 'Make Private' : 'Make Public'}>
+                        <IconButton 
+                          onClick={() => toggleVisibility(forum)}
+                          disabled={isTogglingPublic}
+                        >
+                          {forum.is_public ? <VisibilityOff /> : <Visibility />}
+                        </IconButton>
+                      </Tooltip>
+                      <Tooltip title="Delete">
+                        <IconButton onClick={() => openDeleteDialog(forum)}>
+                          <Delete color="error" />
+                        </IconButton>
+                      </Tooltip>
+                    </Stack>
+                  </Stack>
+                </CardContent>
+              </Card>
+            ))}
           </Stack>
-        </Stack>
-      </CardContent>
-    </Card>
-  ))}
-</Stack>
         </>
       )}
 
@@ -419,9 +422,9 @@ const ForumList = () => {
             Are you sure you want to delete the forum "{forumToDelete?.name}"?
             This action cannot be undone.
           </Typography>
-          { forumToDelete?.threads_count && forumToDelete?.threads_count > 0 && (
+          {forumToDelete?.threads_count && forumToDelete.threads_count > 0 && (
             <Alert severity="warning" sx={{ mt: 2 }}>
-              This forum contains {forumToDelete.threads_count | 0} threads which will also be deleted.
+              This forum contains {forumToDelete.threads_count} threads which will also be deleted.
             </Alert>
           )}
         </DialogContent>
@@ -431,6 +434,7 @@ const ForumList = () => {
             onClick={confirmDelete} 
             color="error"
             variant="contained"
+            disabled={deleteMutation.isPending}
           >
             Delete
           </Button>

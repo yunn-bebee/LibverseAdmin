@@ -7,9 +7,8 @@ import UserEdit from './pages/users/UserEdit';
 import ForumList from './pages/forums/ForumList';
 import ForumEdit from './pages/forums/ForumEdit';
 import EventList from './pages/events/EventList';
-import EventEdit from './pages/events/EventEdit';
 import BookList from './pages/books/BookList';
-// import BookEdit from './pages/books/BookEdit';
+
 import ChallengeList from './pages/challenges/ChallengeList';
 import ChallengeEdit from './pages/challenges/ChallengeEdit';
 import ContentModeration from './pages/moderation/ContentModeration';
@@ -23,6 +22,8 @@ import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import BookCreateOrEdit from './pages/books/BookEdit';
 import NotFoundPage from './pages/NotFound';
 import ForumView from './pages/forums/ForumView';
+import ThreadView from './pages/threads/ThreadView';
+import ChallengeView from './pages/challenges/ChallengeView';
 
 // Create a single instance of queryClient
 const queryClient = new QueryClient({
@@ -60,10 +61,14 @@ const App: React.FC = () => {
                 <Route path={routes.admin.forums.index} element={<ForumList />} />
                 <Route path={routes.admin.forums.edit(':id')} element={<ForumEdit />} />
                 <Route path={routes.admin.forums.get(':id')} element={<ForumView />} />
+                <Route path={routes.admin.books.create} element={<BookCreateOrEdit />} />
+                <Route path={routes.admin.forums.threads.index(':forumId')} element={<ForumList />} />
+                <Route path={routes.admin.forums.threads.show(':id')} element={<ThreadView />} />
+                <Route path={routes.admin.forums.threads.edit(':forumId', ':id')} element={<ForumView />} />
                 <Route path={routes.admin.events.index} element={<EventList />} />
-                <Route path={routes.admin.events.edit(':id')} element={<EventEdit />} />
                 <Route path={routes.admin.challenges.index} element={<ChallengeList />} />
                 <Route path={routes.admin.challenges.edit(':id')} element={<ChallengeEdit />} />
+                <Route path={routes.admin.challenges.view(':id')} element={<ChallengeView/>} />
                 <Route path={routes.admin.moderation} element={<ContentModeration />} />
               </Route>
             </Route>

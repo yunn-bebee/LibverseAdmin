@@ -44,6 +44,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const login = async (email: string, password: string) => {
     const response = await postData<LoginResponse>(url.auth.login, { email, password });
+    console.log('Login response:', response);
     const userWithLogin = { 
       ...response.data.user,
       lastLogin: new Date().toISOString()

@@ -92,7 +92,7 @@ export const postData = async <T>(url: string, data: object): Promise<AxiosRespo
    
     
     const response = await api.post(url, data); // Use api instead of axios
-    return response;
+    return response.data;
 };
 export const postBlobData = async <T>(url: string, data: object): Promise<AxiosResponse<T>> => {
     const response = await api.post(url, data, {

@@ -53,6 +53,7 @@ export interface GoogleBookResult {
 }
 
 export interface GoogleBookResultItem {
+  genres?: string[];
   google_books_id: string;
   title: string;
   author: string;

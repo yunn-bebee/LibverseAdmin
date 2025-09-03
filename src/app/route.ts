@@ -14,10 +14,16 @@ export const routes = {
     },
     forums: {
       index: '/admin/forums',
- 
       create: '/admin/forums/create',
       edit: (forumId: string) => `/admin/forums/edit/${forumId}`,
       get: (forumId: string) => `/admin/forums/${forumId}`,
+      threads: {
+        index: (forumId: string) => `/admin/forums/${forumId}/threads`,
+        create: (forumId: string) => `/admin/forums/${forumId}/threads/create`,
+        show: (threadID: string) => `/admin/forums/threads/${threadID}`,
+        edit: (forumId: string, threadId: string) => `/admin/forums/${forumId}/threads/${threadId}`,
+       
+      },
     },
     events: {
       index: '/admin/events',
@@ -25,7 +31,9 @@ export const routes = {
     },
     challenges: {
       index: '/admin/challenges',
-      edit: (challengeId: string) => `/admin/challenges/${challengeId}`,
+      edit: (challengeId: string) => `/admin/challenges/edit/ ${challengeId}`,
+      create: '/admin/challenges/create',
+      view: (challengeId: string) => `/admin/challenges/${challengeId}`,
     },
     moderation: '/admin/moderation',
   },

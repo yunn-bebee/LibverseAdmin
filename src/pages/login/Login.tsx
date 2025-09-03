@@ -41,10 +41,10 @@ const Login = () => {
         }
           // Check for existing auth token
         const token = localStorage.getItem(TOKEN_KEY) || sessionStorage.getItem(TOKEN_KEY);
-        if (token) {
+        if (token || token != undefined) {
             navigate('/admin');
         }
-    }, []);
+    }, [navigate]);
 
     const handleToggle = () => {
         setMode((prev) => {

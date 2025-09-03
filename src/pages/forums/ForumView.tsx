@@ -12,11 +12,16 @@ import {
   Chip,
   TextField,
   Pagination,
-  CircularProgress
+  CircularProgress,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Alert,
+  Skeleton
 } from '@mui/material';
 import {
   Home,
- 
   Add,
   ArrowBack,
   Delete,
@@ -26,7 +31,8 @@ import {
   Forum
 } from '@mui/icons-material';
 import type { Thread } from '../../app/types/forum';
-import { useForum, useThreads, useDeleteForum, useUpdateForum, useCreateThread } from '../../hooks/useForum';
+import { useForum, useThreads, useDeleteForum, useCreateThread, useToggleForumPublic } from '../../hooks/useForum';
+import { routes } from '../../app/route';
 
 const ForumView: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -59,12 +65,12 @@ const ForumView: React.FC = () => {
 
   // Mutations
   const deleteForumMutation = useDeleteForum();
-  const updateForumMutation = useUpdateForum();
   const createThreadMutation = useCreateThread(id || '');
+  const toggleForumPublicMutation = useToggleForumPublic();
 
   // Derived data
   const threads: Thread[] = threadsResponse?.data || [];
-  const totalPages: number = threadsResponse?.meta?.pagination?.total_pages || 1;
+  const totalPages: number = threadsResponse?.meta?.total_pages || 1;
 
   // Handlers
   const handlePageChange = (_: React.ChangeEvent<unknown>, value: number): void => {
@@ -80,12 +86,9 @@ const ForumView: React.FC = () => {
     if (!forum || !id) return;
     
     try {
-      await updateForumMutation.mutateAsync({
-        id,
-        data: { is_public: !forum.is_public }
-      });
+      await toggleForumPublicMutation.mutateAsync(id);
     } catch (error) {
-      console.error('Failed to update forum visibility:', error);
+      console.error('Failed to toggle forum visibility:', error);
     }
   };
 
@@ -115,8 +118,59 @@ const ForumView: React.FC = () => {
 
   if (isForumLoading) {
     return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', p: 4 }}>
-        <CircularProgress />
+      <Box sx={{ p: 3, maxWidth: 1200, margin: '0 auto' }}>
+        {/* Breadcrumbs Skeleton */}
+        <Breadcrumbs aria-label="breadcrumb" sx={{ mb: 3 }}>
+          <Skeleton width={100} />
+          <Skeleton width={100} />
+          <Skeleton width={100} />
+        </Breadcrumbs>
+
+        {/* Header Skeleton */}
+        <Stack direction="row" justifyContent="space-between" alignItems="center" mb={3}>
+          <Stack direction="row" alignItems="center" spacing={2}>
+            <Skeleton variant="circular" width={40} height={40} />
+            <Skeleton variant="text" width={200} height={40} />
+          </Stack>
+          <Stack direction="row" spacing={1}>
+            <Skeleton variant="rounded" width={120} height={40} />
+            <Skeleton variant="circular" width={40} height={40} />
+            <Skeleton variant="circular" width={40} height={40} />
+            <Skeleton variant="circular" width={40} height={40} />
+          </Stack>
+        </Stack>
+
+        {/* Forum Info Skeleton */}
+        <Card sx={{ mb: 3 }}>
+          <CardContent>
+            <Stack direction="row" spacing={1} mb={2}>
+              <Skeleton variant="rounded" width={80} height={24} />
+              <Skeleton variant="rounded" width={80} height={24} />
+              <Skeleton variant="text" width={100} height={24} />
+            </Stack>
+            <Skeleton variant="text" width="100%" height={24} />
+            <Skeleton variant="text" width="80%" height={24} />
+          </CardContent>
+        </Card>
+
+        {/* Search and Threads Header Skeleton */}
+        <Stack direction="row" justifyContent="space-between" alignItems="center" mb={2}>
+          <Skeleton variant="text" width={100} height={36} />
+          <Skeleton variant="rounded" width={300} height={40} />
+        </Stack>
+
+        {/* Thread List Skeleton */}
+        <Stack spacing={2}>
+          {[...Array(5)].map((_, index) => (
+            <Card key={index}>
+              <CardContent>
+                <Skeleton variant="text" width="80%" height={30} />
+                <Skeleton variant="text" width="60%" height={20} />
+                <Skeleton variant="text" width="40%" height={16} />
+              </CardContent>
+            </Card>
+          ))}
+        </Stack>
       </Box>
     );
   }
@@ -179,9 +233,9 @@ const ForumView: React.FC = () => {
           </Button>
           <IconButton 
             onClick={handleToggleVisibility} 
-            disabled={updateForumMutation.isLoading}
+            disabled={toggleForumPublicMutation.isPending}
           >
-            {updateForumMutation.isLoading ? (
+            {toggleForumPublicMutation.isPending ? (
               <CircularProgress size={24} />
             ) : forum.is_public ? (
               <VisibilityOff />
@@ -209,11 +263,11 @@ const ForumView: React.FC = () => {
               size="small" 
             />
             <Typography variant="body2" color="text.secondary">
-              {threadsResponse?.meta?.pagination?.total || 0} threads
+              {threadsResponse?.meta?.total || 0} threads
             </Typography>
           </Stack>
           <Typography variant="body1" paragraph>
-            {forum.description}
+            {forum.description || 'No description available.'}
           </Typography>
         </CardContent>
       </Card>
@@ -235,9 +289,17 @@ const ForumView: React.FC = () => {
 
       {/* Thread List */}
       {isThreadsLoading ? (
-        <Box sx={{ display: 'flex', justifyContent: 'center', p: 4 }}>
-          <CircularProgress />
-        </Box>
+        <Stack spacing={2}>
+          {[...Array(5)].map((_, index) => (
+            <Card key={index}>
+              <CardContent>
+                <Skeleton variant="text" width="80%" height={30} />
+                <Skeleton variant="text" width="60%" height={20} />
+                <Skeleton variant="text" width="40%" height={16} />
+              </CardContent>
+            </Card>
+          ))}
+        </Stack>
       ) : threadsError ? (
         <Card sx={{ p: 3 }}>
           <Typography color="error">
@@ -267,12 +329,12 @@ const ForumView: React.FC = () => {
               <Card 
                 key={thread.id} 
                 sx={{ cursor: 'pointer' }} 
-                onClick={() => navigate(`/threads/${thread.id}`)}
+                onClick={() => navigate(routes.admin.forums.threads.show(thread.id.toString()))}
               >
                 <CardContent>
                   <Typography variant="h6">{thread.title}</Typography>
                   <Typography variant="body2" color="text.secondary">
-                    Started by {thread.added_by?.name || 'Unknown'} • {thread.replies_count} replies
+                    Started by {thread.user?.username || 'Unknown'} • {thread.posts_count} posts
                   </Typography>
                   <Typography variant="caption" color="text.secondary">
                     Last updated: {new Date(thread.updated_at).toLocaleString()}
@@ -298,15 +360,17 @@ const ForumView: React.FC = () => {
       )}
 
       {/* Create Thread Dialog */}
-      {isCreateThreadOpen && (
-        <Card sx={{ p: 3, mt: 3 }}>
-          <Typography variant="h6" gutterBottom>Create New Thread</Typography>
+      <Dialog open={isCreateThreadOpen} onClose={() => setIsCreateThreadOpen(false)}>
+        <DialogTitle>Create New Thread</DialogTitle>
+        <DialogContent>
           <TextField
             fullWidth
             label="Title"
             value={newThreadData.title}
             onChange={(e) => setNewThreadData({...newThreadData, title: e.target.value})}
-            sx={{ mb: 2 }}
+            sx={{ mt: 2, mb: 2 }}
+            error={!newThreadData.title && createThreadMutation.isError}
+            helperText={!newThreadData.title && createThreadMutation.isError ? 'Title is required' : ''}
           />
           <TextField
             fullWidth
@@ -316,52 +380,67 @@ const ForumView: React.FC = () => {
             value={newThreadData.content}
             onChange={(e) => setNewThreadData({...newThreadData, content: e.target.value})}
             sx={{ mb: 2 }}
+            error={!newThreadData.content && createThreadMutation.isError}
+            helperText={!newThreadData.content && createThreadMutation.isError ? 'Content is required' : ''}
           />
-          <Stack direction="row" spacing={2}>
-            <Button 
-              variant="outlined" 
-              onClick={() => setIsCreateThreadOpen(false)}
-            >
-              Cancel
-            </Button>
-            <Button 
-              variant="contained" 
-              onClick={handleCreateThread}
-              disabled={createThreadMutation.isLoading || !newThreadData.title || !newThreadData.content}
-              startIcon={createThreadMutation.isLoading ? <CircularProgress size={20} /> : null}
-            >
-              Create Thread
-            </Button>
-          </Stack>
-        </Card>
-      )}
+          {createThreadMutation.isError && (
+            <Alert severity="error" sx={{ mt: 2 }}>
+              Failed to create thread: {(createThreadMutation.error as Error)?.message || 'An error occurred'}
+            </Alert>
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button 
+            variant="outlined" 
+            onClick={() => setIsCreateThreadOpen(false)}
+          >
+            Cancel
+          </Button>
+          <Button 
+            variant="contained" 
+            onClick={handleCreateThread}
+            disabled={createThreadMutation.isPending || !newThreadData.title || !newThreadData.content}
+            startIcon={createThreadMutation.isPending ? <CircularProgress size={20} /> : null}
+          >
+            Create Thread
+          </Button>
+        </DialogActions>
+      </Dialog>
 
       {/* Delete Confirmation Dialog */}
-      {isDeleteConfirmOpen && (
-        <Card sx={{ p: 3, mt: 3 }}>
-          <Typography variant="h6" gutterBottom>Delete Forum</Typography>
+      <Dialog open={isDeleteConfirmOpen} onClose={() => setIsDeleteConfirmOpen(false)}>
+        <DialogTitle>Delete Forum</DialogTitle>
+        <DialogContent>
           <Typography sx={{ mb: 2 }}>
-            Are you sure you want to delete this forum? All threads and replies will be permanently removed.
+            Are you sure you want to delete the forum "{forum.name}"? All threads and replies will be permanently removed.
           </Typography>
-          <Stack direction="row" spacing={2}>
-            <Button 
-              variant="outlined" 
-              onClick={() => setIsDeleteConfirmOpen(false)}
-            >
-              Cancel
-            </Button>
-            <Button 
-              variant="contained" 
-              color="error"
-              onClick={handleDeleteForum}
-              disabled={deleteForumMutation.isLoading}
-              startIcon={deleteForumMutation.isLoading ? <CircularProgress size={20} /> : null}
-            >
-              Delete Forum
-            </Button>
-          </Stack>
-        </Card>
-      )}
+          <Alert severity="warning" sx={{ mt: 2 }}>
+            This action cannot be undone.
+          </Alert>
+          {deleteForumMutation.isError && (
+            <Alert severity="error" sx={{ mt: 2 }}>
+              Failed to delete forum: {(deleteForumMutation.error as Error)?.message || 'An error occurred'}
+            </Alert>
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button 
+            variant="outlined" 
+            onClick={() => setIsDeleteConfirmOpen(false)}
+          >
+            Cancel
+          </Button>
+          <Button 
+            variant="contained" 
+            color="error"
+            onClick={handleDeleteForum}
+            disabled={deleteForumMutation.isPending}
+            startIcon={deleteForumMutation.isPending ? <CircularProgress size={20} /> : null}
+          >
+            Delete Forum
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 };

@@ -1,3 +1,4 @@
+
 const app_base_url = "http://localhost:8000/api/v1";
 
 export const url = {
@@ -28,19 +29,24 @@ export const url = {
     searchGoogle: `${app_base_url}/book/search/google`,
     createFromGoogle: `${app_base_url}/book/google`,
   },
-  challenge: {
-    index: `${app_base_url}/challenge`,
-    store: `${app_base_url}/challenge`,
-    show: (challengeId: string) => `${app_base_url}/challenge/${challengeId}`,
-    update: (challengeId: string) => `${app_base_url}/challenge/${challengeId}`,
-    destroy: (challengeId: string) => `${app_base_url}/challenge/${challengeId}`,
+   challenge: {
+    index: `${app_base_url}/challenges`,
+    store: `${app_base_url}/challenges`,
+    show: (challengeId: string) => `${app_base_url}/challenges/${challengeId}`,
+    update: (challengeId: string) => `${app_base_url}/challenges/${challengeId}`,
+    destroy: (challengeId: string) => `${app_base_url}/challenges/${challengeId}`,
+    join: (challengeId: string) => `${app_base_url}/challenges/${challengeId}/join`,
+    addBook: (challengeId: string) => `${app_base_url}/challenges/${challengeId}/add-book`,
+    updateBook: (recordId: string) => `${app_base_url}/challenges/books/${recordId}`,
+    progress: (challengeId: string) => `${app_base_url}/challenges/${challengeId}/progress`,
+    leaderboard: (challengeId: string) => `${app_base_url}/challenges/${challengeId}/leaderboard`,
   },
   event: {
-    index: `${app_base_url}/event`,
-    store: `${app_base_url}/event`,
-    show: (eventId: string) => `${app_base_url}/event/${eventId}`,
-    update: (eventId: string) => `${app_base_url}/event/${eventId}`,
-    destroy: (eventId: string) => `${app_base_url}/event/${eventId}`,
+    index: `${app_base_url}/events`,
+    store: `${app_base_url}/events`,
+    show: (eventId: string) => `${app_base_url}/events/${eventId}`,
+    update: (eventId: string) => `${app_base_url}/events/${eventId}`,
+    destroy: (eventId: string) => `${app_base_url}/events/${eventId}`,
   },
  forum: {
     index: `${app_base_url}/forums`,
@@ -54,6 +60,9 @@ export const url = {
       store: (forumId: string) => `${app_base_url}/forums/${forumId}/threads`,
       togglePin: (forumId: string, threadId: string) => `${app_base_url}/forums/${forumId}/threads/${threadId}/toggle-pin`,
       toggleLock: (forumId: string, threadId: string) => `${app_base_url}/forums/${forumId}/threads/${threadId}/toggle-lock`,
+      show: ( threadId: string) => `${app_base_url}/threads/${threadId}`,
+      posts: (threadId: string) => `${app_base_url}/threads/${threadId}/posts`,
+      
     },
   },
   mention: {
@@ -88,6 +97,17 @@ export const url = {
     show: (userId: string) => `${app_base_url}/user/${userId}`,
     update: (userId: string) => `${app_base_url}/user/${userId}`,
     destroy: (userId: string) => `${app_base_url}/user/${userId}`,
+    ban: (userId: string) => `${app_base_url}/user/${userId}/ban`,
+    
+  },
+  posts: {  
+    update: (postId: string) => `${app_base_url}/posts/${postId}`,
+    destroy: (postId: string) => `${app_base_url}/posts/${postId}`,
+    like: (postId: string) => `${app_base_url}/posts/${postId}/like`,
+    save: (postId: string) => `${app_base_url}/posts/${postId}/save`,
+    comment: (postId: string) => `${app_base_url}/posts/${postId}/comment`,
+    flag: (postId: string) => `${app_base_url}/posts/${postId}/flag`,
+    uploadMedia: (postId: string) => `${app_base_url}/posts/${postId}/media`,
   },
   sanctum: {
     csrfCookie: `${app_base_url}/../sanctum/csrf-cookie`,
