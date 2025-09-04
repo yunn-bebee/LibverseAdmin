@@ -31,9 +31,9 @@ export const routes = {
     },
     challenges: {
       index: '/admin/challenges',
-      edit: (challengeId: string) => `/admin/challenges/edit/ ${challengeId}`,
+      edit: (challengeId: string) => `/admin/challenges/ ${challengeId}`,
       create: '/admin/challenges/create',
-      view: (challengeId: string) => `/admin/challenges/${challengeId}`,
+      view: (challengeId: string) => `/admin/challenges/view/${challengeId}`,
     },
     moderation: '/admin/moderation',
   },

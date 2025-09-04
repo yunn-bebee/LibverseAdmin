@@ -24,6 +24,7 @@ import NotFoundPage from './pages/NotFound';
 import ForumView from './pages/forums/ForumView';
 import ThreadView from './pages/threads/ThreadView';
 import ChallengeView from './pages/challenges/ChallengeView';
+import ChallengeForm from './pages/challenges/ChallengeForm';
 
 // Create a single instance of queryClient
 const queryClient = new QueryClient({
@@ -68,7 +69,8 @@ const App: React.FC = () => {
                 <Route path={routes.admin.events.index} element={<EventList />} />
                 <Route path={routes.admin.challenges.index} element={<ChallengeList />} />
                 <Route path={routes.admin.challenges.edit(':id')} element={<ChallengeEdit />} />
-                <Route path={routes.admin.challenges.view(':id')} element={<ChallengeView/>} />
+                <Route path={routes.admin.challenges.view(':id')} element={<ChallengeView />} />
+                <Route path={routes.admin.challenges.create} element={<ChallengeForm />} />
                 <Route path={routes.admin.moderation} element={<ContentModeration />} />
               </Route>
             </Route>

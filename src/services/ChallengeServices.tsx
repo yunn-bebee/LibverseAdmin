@@ -13,7 +13,7 @@ export const challengeService = {
     if (filters.search) params.append('search', filters.search);
     params.append('per_page', perPage.toString());
 
-    const response = await getData(`${url.challenge.index}?${params.toString()}`);
+    const response = await getDatawithMetaData(`${url.challenge.index}?${params.toString()}`);
     return response;
   },
 

@@ -11,6 +11,7 @@ export interface ReadingChallenge {
   is_active: boolean;
   created_at: string;
   updated_at: string;
+  book_ids: string[];
   has_joined?: boolean;
   badge?: {
     id: string;
@@ -51,6 +52,8 @@ export interface LeaderboardEntry {
 }
 
 export interface ChallengeFilters {
+  per_page?: number;
+  page?: number;
   active?: boolean;
   current?: boolean;
   search?: string;

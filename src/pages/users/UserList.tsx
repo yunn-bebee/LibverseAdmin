@@ -34,7 +34,7 @@ import {
   PersonOff,
   AdminPanelSettings 
 } from '@mui/icons-material';
-import { useUsers, useDeleteUser, useDisableUser, useUpdateUserRole, useUserStats } from '../../hooks/useUsers';
+import { useUsers, useDeleteUser, useDisableUser, useUpdateUserRole, useUserStats, useApproveUser } from '../../hooks/useUsers';
 import type { User } from '../../app/types/user';
 
 const UserList: React.FC = () => {
@@ -63,6 +63,7 @@ const { data: userStats, isLoading: statsLoading, refetch: refetchStats } = useU
 console.log('Selected user ID:', selectedUser?.id);
 console.log('User stats:', userStats);
 console.log('Stats loading:', statsLoading);
+  const approveMutation = useApproveUser();
   const deleteMutation = useDeleteUser();
   const disableMutation = useDisableUser();
   const updateRoleMutation = useUpdateUserRole();
@@ -110,6 +111,15 @@ console.log('Stats loading:', statsLoading);
     if (selectedUser) {
       if (window.confirm(`Are you sure you want to delete user ${selectedUser.username}?`)) {
         await deleteMutation.mutateAsync(selectedUser.id);
+      }
+    }
+    handleMenuClose();
+  };
+
+  const handleApprove = async () => {
+    if (selectedUser) {
+      if (window.confirm(`Are you sure you want to approve user ${selectedUser.username}?`)) {
+        await approveMutation.mutateAsync(selectedUser.id);
       }
     }
     handleMenuClose();
@@ -284,6 +294,9 @@ console.log('Stats loading:', statsLoading);
       >
         <MenuItem onClick={handleViewStats}>
           <Visibility sx={{ mr: 1 }} /> View Stats
+        </MenuItem>
+        <MenuItem onClick={handleApprove} disabled={selectedUser?.approvalStatus === 'approved'}>
+          <Visibility sx={{ mr: 1 }} /> Approve User
         </MenuItem>
         <MenuItem onClick={handleChangeRole}>
           <AdminPanelSettings sx={{ mr: 1 }} /> Change Role

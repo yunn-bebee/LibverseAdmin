@@ -1,4 +1,4 @@
-import { getData,  deleteData, uploadMultimedia, updateMultimedia } from '../app/api';
+import { getData,  deleteData, uploadMultimedia, updateMultimedia, getDatawithMetaData } from '../app/api';
 import { url } from '../app/url';
 import type { Event, EventFilters } from '../app/types/event';
 
@@ -14,7 +14,7 @@ export const eventService = {
       ? `${url.event.index}?${queryString}`
       : url.event.index;
     
-    return await getData(endpoint);
+    return await getDatawithMetaData(endpoint);
   },
 
   getEvent: async (id: string): Promise<Event> => {

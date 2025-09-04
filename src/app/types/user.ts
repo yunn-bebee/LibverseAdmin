@@ -61,3 +61,6 @@ export interface UserStats{
   threads_created: number;
   comments_created: number;
 }
+export interface dashboardStats{
+  
+}

@@ -54,7 +54,7 @@ export const userService = {
   },
 
   ApproveUser: async (id: string): Promise<User> => {
-    const response = await putData<User>(url.auth.admin.approveUser(id), {});
+    const response = await postData<User>(url.auth.admin.approveUser(id), {});
     return response.data;
   },
   
@@ -62,6 +62,10 @@ export const userService = {
     const response = await getData(`users/${id}/stats`);
     console.log('User stats response:', response.data);
     return response.data;
+  },
+  getAdminStats: async ():Promise<DashboardStats>=> {
+    const response = await getData(url.user.dashboard);
+    console.log('Admin stats response:', response.data);
+    return response.data;
   }
-
 };

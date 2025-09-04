@@ -6,8 +6,7 @@ export function useEvents(filters: EventFilters = {}) {
   return useQuery({
     queryKey: ['events', filters],
     queryFn: () => eventService.getEvents(filters),
-   
-  });
+     });
 }
 
 export function useEvent(id: string) {
