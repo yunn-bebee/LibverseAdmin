@@ -1,6 +1,6 @@
 // services/userService.ts
 import { url } from "../app/url";
-import type { PaginatedResponse, User, UserStats } from "../app/types/user";
+import type { DashboardStats, PaginatedResponse, User, UserStats } from "../app/types/user";
 import { getDatawithMetaData, postData, putData, deleteData, getData } from "../app/api";
 
 export const userService = {

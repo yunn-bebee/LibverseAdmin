@@ -35,16 +35,30 @@ export interface Book {
   updated_at?: string;
 }
 
+export interface Report {
+  id: number;
+  user: User;
+  reason: string;
+  status: string;
+  reviewed_at: string | null;
+  reviewed_by: User | null;
+  created_at: string;
+}
+
 export interface Post {
   id: number;
-  uuid?: string | null;
+  uuid: string;
   content: string;
-  is_flagged: number;
+  is_flagged: boolean | number; // matches backend (tinyint/bool)
   user: User;
-  book?: { uuid?: string | null; title: string; cover_image?: string };
+  book?: {
+    uuid?: string | null;
+    title: string;
+    cover_image?: string | null;
+  };
   parent_post_id?: number | null;
   replies: Post[];
-  media: Media[]; // can refine if known
+  media: Media[];
   likes_count: number;
   saves_count: number;
   replies_count: number;
@@ -52,7 +66,11 @@ export interface Post {
   is_saved: boolean;
   created_at: string;
   updated_at: string;
+
+  // Only present if user has admin/moderator role
+  reports?: Report[];
 }
+
 
 export interface Thread {
   forum_id: number;

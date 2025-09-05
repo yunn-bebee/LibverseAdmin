@@ -82,7 +82,7 @@ export const url = {
     markAsRead: (id: string) => `${app_base_url}/notifications/${id}/read`,
   },
 
-  post: {
+  posts: {
     show: (postId: string) => `${app_base_url}/posts/${postId}`,
     update: (postId: string) => `${app_base_url}/posts/${postId}`,
     destroy: (postId: string) => `${app_base_url}/posts/${postId}`,
@@ -91,6 +91,7 @@ export const url = {
     comment: (postId: string) => `${app_base_url}/posts/${postId}/comment`,
     report: (postId: string) => `${app_base_url}/posts/${postId}/report`,
     unflag: (postId: string) => `${app_base_url}/admin/posts/${postId}/unflag`,
+    flag: (postId: string) => `${app_base_url}/admin/posts/${postId}/flag`,
     uploadMedia: (postId: string) => `${app_base_url}/posts/${postId}/media`,
     reported: `${app_base_url}/admin/reported-posts`,
   },
@@ -117,7 +118,7 @@ export const url = {
     updateRole: (userId: string) => `${app_base_url}/admin/users/${userId}/role`,
     disable: (userId: string) => `${app_base_url}/admin/users/${userId}/disable`,
     enable: (userId: string) => `${app_base_url}/admin/users/${userId}/enable`,
-    dashboard:  `${app_base_url}/admin/users/stats`,
+    dashboard:  `${app_base_url}/admin/stats`,
   },
 
   sanctum: {

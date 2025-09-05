@@ -54,6 +54,13 @@ export function useDeleteUser() {
     },
   });
 }
+export function useDashboardStats() {
+  return useQuery({
+    queryKey: ['dashboardStats'],
+    queryFn: userService.getAdminStats,
+  });
+}
+
 
 export function useBanUser() {
   const queryClient = useQueryClient();

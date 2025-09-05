@@ -60,7 +60,51 @@ export interface UserStats{
   posts_created: number;
   threads_created: number;
   comments_created: number;
-}
-export interface dashboardStats{
-  
+}export interface DashboardStats {
+  users: {
+    total: number;
+    by_role: {
+      admin: number;
+      moderator: number;
+      member: number;
+    };
+    by_status: {
+      pending: number;
+      approved: number;
+      rejected: number;
+      banned: number;
+    };
+   
+  };
+  books: {
+    total: number;
+    in_challenges: number;
+    added_last_30_days: number;
+  };
+  forums: {
+    total: number;
+    public: number;
+    private: number;
+    active_threads: number;
+  };
+  threads: {
+    total: number;
+    locked: number;
+  };
+  posts: {
+    total: number;
+    flagged: number;
+  };
+  events: {
+    total: number;
+    upcoming: number;
+    total_rsvps: number;
+    avg_rsvps_per_event: number;
+  };
+  challenges: {
+    total: number;
+    active: number;
+    total_participants: number;
+    completions: number;
+  };
 }

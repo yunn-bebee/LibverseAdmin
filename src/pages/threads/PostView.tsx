@@ -24,8 +24,9 @@ import {
   Delete,
   Comment,
 } from '@mui/icons-material';
-import type { Post } from '../../app/types/post';
+
 import { useUpdatePost, useDeletePost, useTogglePostLike, useTogglePostSave, useCreateComment, useTogglePostFlag } from '../../hooks/useForum';
+import type { Post } from '../../app/types/forum';
 
 interface PostViewProps {
   post: Post;
@@ -76,7 +77,7 @@ const PostView: React.FC<PostViewProps> = ({ post, threadId, isLocked, depth }) 
     togglePostFlagMutation.mutate(post.uuid);
   };
 
-  const userInitials = post.user?.name?.[0] || post.user?.email?.[0] || '?';
+  const userInitials = post.user?.username?.[0] || post.user?.email?.[0] || '?';
 
   return (
     <Card
@@ -91,7 +92,7 @@ const PostView: React.FC<PostViewProps> = ({ post, threadId, isLocked, depth }) 
         <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
           <Avatar sx={{ mr: 2, bgcolor: 'primary.main' }}>{userInitials}</Avatar>
           <Box>
-            <Typography variant="subtitle1">{post.user?.name || post.user?.email}</Typography>
+            <Typography variant="subtitle1">{post.user?.username || post.user?.email}</Typography>
             <Typography variant="caption" color="text.secondary">
               {new Date(post.created_at).toLocaleString()}
             </Typography>
