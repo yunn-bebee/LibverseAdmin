@@ -85,7 +85,7 @@ const ThreadView: React.FC = () => {
   const [replyContent, setReplyContent] = useState('');
   const [editPost, setEditPost] = useState<{ id: string; content: string } | null>(null);
   const [confirmDelete, setConfirmDelete] = useState<Post | null>(null);
-
+  setPostSearch('');
 
   const { data: thread, isLoading: threadLoading, isError: threadError, error: threadErrorObj } = useThread(threadId);
   const toggleThreadPinMutation = useToggleThreadPin(thread?.forum_id.toString() || '');

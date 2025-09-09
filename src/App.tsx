@@ -10,7 +10,7 @@ import EventList from './pages/events/EventList';
 import BookList from './pages/books/BookList';
 
 import ChallengeList from './pages/challenges/ChallengeList';
-import ChallengeEdit from './pages/challenges/ChallengeEdit';
+// import ChallengeEdit from './pages/challenges/ChallengeEdit';
 import ContentModeration from './pages/moderation/ContentModeration';
 import Login from './pages/login/Login';
 import { AuthProvider } from './contexts/AuthContext';
@@ -25,6 +25,8 @@ import ForumView from './pages/forums/ForumView';
 import ThreadView from './pages/threads/ThreadView';
 import ChallengeView from './pages/challenges/ChallengeView';
 import ChallengeForm from './pages/challenges/ChallengeForm';
+import BadgeManagement from './pages/challenges/BadgeManagement';
+import ChallengeParticipants from './pages/challenges/ChallengeParticipant';
 
 // Create a single instance of queryClient
 const queryClient = new QueryClient({
@@ -54,23 +56,29 @@ const App: React.FC = () => {
             <Route element={<ProtectedRoute />}>
               <Route element={<DashboardLayout />}>
                 <Route path={routes.admin.dashboard} element={<Dashboard />} />
+
                 <Route path={routes.admin.users.index} element={<UserList />} />
                 <Route path={routes.admin.users.edit(':id')} element={<UserEdit />} />
+
                 <Route path={routes.admin.books.index} element={<BookList />} />
                 <Route path={routes.admin.books.edit(':id')} element={<BookCreateOrEdit />} />
                 <Route path={routes.admin.books.create} element={<BookCreateOrEdit />} />
+
                 <Route path={routes.admin.forums.index} element={<ForumList />} />
                 <Route path={routes.admin.forums.edit(':id')} element={<ForumEdit />} />
                 <Route path={routes.admin.forums.get(':id')} element={<ForumView />} />
-                <Route path={routes.admin.books.create} element={<BookCreateOrEdit />} />
+              
                 <Route path={routes.admin.forums.threads.index(':forumId')} element={<ForumList />} />
                 <Route path={routes.admin.forums.threads.show(':id')} element={<ThreadView />} />
                 <Route path={routes.admin.forums.threads.edit(':forumId', ':id')} element={<ForumView />} />
+
                 <Route path={routes.admin.events.index} element={<EventList />} />
                 <Route path={routes.admin.challenges.index} element={<ChallengeList />} />
-                <Route path={routes.admin.challenges.edit(':id')} element={<ChallengeEdit />} />
+                <Route path={routes.admin.challenges.edit(':id')} element={<ChallengeForm />} />
                 <Route path={routes.admin.challenges.view(':id')} element={<ChallengeView />} />
+                <Route path={routes.admin.challenges.participants(':challengeId')} element={<ChallengeParticipants />} />
                 <Route path={routes.admin.challenges.create} element={<ChallengeForm />} />
+                <Route path={routes.admin.challenges.badges} element={<BadgeManagement />} />
                 <Route path={routes.admin.moderation} element={<ContentModeration />} />
               </Route>
             </Route>

@@ -31,9 +31,11 @@ export const routes = {
     },
     challenges: {
       index: '/admin/challenges',
-      edit: (challengeId: string) => `/admin/challenges/ ${challengeId}`,
+      edit: (challengeId: string) => `/admin/challenges/${challengeId}/edit`,
       create: '/admin/challenges/create',
-      view: (challengeId: string) => `/admin/challenges/view/${challengeId}`,
+      view: (challengeId: string) => `/admin/challenges/${challengeId}`,
+      participants: (challengeId: string) => `/admin/challenges/${challengeId}/participants`,
+      badges: '/admin/challenges/badges',
     },
     moderation: '/admin/moderation',
   },

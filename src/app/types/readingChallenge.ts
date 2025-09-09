@@ -11,17 +11,18 @@ export interface ReadingChallenge {
   is_active: boolean;
   created_at: string;
   updated_at: string;
+  participants_count?: number;
   book_ids: string[];
   has_joined?: boolean;
   badge?: {
     id: string;
     name: string;
-    image_url: string;
+    icon_url: string;
   };
   creator?: {
     id: string;
     name: string;
-  };
+  };    
   suggested_books?: Array<{
     id: string;
     title: string;
@@ -29,7 +30,13 @@ export interface ReadingChallenge {
     cover_image: string;
   }>;
 }
-
+export interface Badge {
+        id: string;
+        name: string;
+        description: string;
+        icon_url: string;
+        type: string;
+      }
 export interface ChallengeProgress {
   challenge_id: string;
   challenge_name: string;
@@ -40,6 +47,18 @@ export interface ChallengeProgress {
   books_remaining: number;
   percentage: number;
   is_completed: boolean;
+}
+export interface UserProgress {
+  user_id: string;
+  username: string;
+  email: string;
+  progress: {
+    books_completed: number;
+    target_count: number;
+    percentage: number;
+    has_badge: boolean;
+  };
+  joined_at: string;
 }
 
 export interface LeaderboardEntry {

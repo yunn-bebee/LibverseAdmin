@@ -1,7 +1,12 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import type { ReadingChallenge as Challenge,ChallengeFilters } from '../app/types/readingChallenge';
+import type { ReadingChallenge as Challenge, ChallengeFilters } from '../app/types/readingChallenge';
+
 import { challengeService } from '../services/ChallengeServices';
 
+
+
+
+// Existing hooks (kept as provided)
 export function useChallenges(filters: ChallengeFilters = {}, perPage: number = 20) {
   return useQuery({
     queryKey: ['challenges', filters, perPage],
@@ -73,5 +78,123 @@ export function useChallengeLeaderboard(challengeId: string) {
     queryKey: ['challenge-leaderboard', challengeId],
     queryFn: () => challengeService.getLeaderboard(challengeId),
     enabled: !!challengeId,
+  });
+}
+
+export const useChallengeParticipants = (challengeId: string, params: { page?: number; per_page?: number }) => {
+  return useQuery({
+    queryKey: ['challengeParticipants', challengeId, params.page, params.per_page],
+    queryFn: () => challengeService.getParticipants(challengeId, params),
+  });
+};
+
+export function useBulkUpdateChallenges() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ challengeIds, updates }: { challengeIds: string[]; updates: Partial<Challenge> }) =>
+      challengeService.bulkUpdate(challengeIds, updates),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['challenges'] });
+    },
+  });
+}
+
+export function useRemoveParticipant() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ challengeId, userId }: { challengeId: string; userId: string }) =>
+      challengeService.removeParticipant(challengeId, userId),
+    onSuccess: (_, { challengeId }) => {
+      queryClient.invalidateQueries({ queryKey: ['challenge-participants', challengeId] });
+    },
+  });
+}
+
+export function useResetParticipantProgress() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ challengeId, userId }: { challengeId: string; userId: string }) =>
+      challengeService.resetParticipantProgress(challengeId, userId),
+    onSuccess: (_, { challengeId }) => {
+      queryClient.invalidateQueries({ queryKey: ['challenge-participants', challengeId] });
+    },
+  });
+}
+
+export function useAwardBadge() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ challengeId, userId, badgeId }: { challengeId: string; userId: string; badgeId: string }) =>
+      challengeService.awardBadge(challengeId, userId, badgeId),
+    onSuccess: (_, { challengeId }) => {
+      queryClient.invalidateQueries({ queryKey: ['challenge-participants', challengeId] });
+    },
+  });
+}
+
+export function useRevokeBadge() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ challengeId, userId, badgeId }: { challengeId: string; userId: string; badgeId: string }) =>
+      challengeService.revokeBadge(challengeId, userId, badgeId),
+    onSuccess: (_, { challengeId }) => {
+      queryClient.invalidateQueries({ queryKey: ['challenge-participants', challengeId] });
+    },
+  });
+}
+
+export function useChallengeStats() {
+  return useQuery({
+    queryKey: ['challenge-stats'],
+    queryFn: () => challengeService.getChallengeStats(),
+  });
+}
+
+
+// Badge-related hooks
+export function useBadges(perPage: number = 20) {
+  return useQuery({
+    queryKey: ['badges', perPage],
+    queryFn: () => challengeService.getBadges(perPage),
+  });
+}
+
+export function useBadge(id: string) {
+  return useQuery({
+    queryKey: ['badge', id],
+    queryFn: () => challengeService.getBadge(id),
+    enabled: !!id,
+  });
+}
+
+export function useCreateBadge() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (data: FormData) => challengeService.createBadge(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['badges'] });
+    },
+  });
+}
+
+export function useUpdateBadge() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, data }: { id: string; data: FormData }) =>
+      challengeService.updateBadge(id, data),
+    onSuccess: (_, { id }) => {
+      queryClient.invalidateQueries({ queryKey: ['badges'] });
+      queryClient.invalidateQueries({ queryKey: ['badge', id] });
+    },
+  });
+}
+
+export function useDeleteBadge() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => challengeService.deleteBadge(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['badges'] });
+    },
   });
 }

@@ -19,7 +19,14 @@ import {
   Divider,
   IconButton,
   Modal,
-
+  Tabs,
+  Tab,
+  List,
+  ListItem,
+  ListItemText,
+  ListItemAvatar,
+  Avatar,
+  Badge,
   Stack,
   Paper,
   alpha,
@@ -33,11 +40,43 @@ import {
   LocationOn,
   People,
   Close,
-  ArrowBack
+  ArrowBack,
+  CheckCircle,
+  Favorite,
+  Cancel
 } from '@mui/icons-material';
 import { useEvents, useDeleteEvent } from '../../hooks/useEvents';
 import EventForm from './EventEdit';
 import type { Event } from '../../app/types/event';
+
+interface TabPanelProps {
+  children?: React.ReactNode;
+  index: number;
+  value: number;
+}
+
+function TabPanel(props: TabPanelProps) {
+  const { children, value, index, ...other } = props;
+
+  return (
+    <div
+      role="tabpanel"
+      hidden={value !== index}
+      id={`rsvp-tabpanel-${index}`}
+      aria-labelledby={`rsvp-tab-${index}`}
+      {...other}
+    >
+      {value === index && <Box sx={{ py: 2 }}>{children}</Box>}
+    </div>
+  );
+}
+
+function a11yProps(index: number) {
+  return {
+    id: `rsvp-tab-${index}`,
+    'aria-controls': `rsvp-tabpanel-${index}`,
+  };
+}
 
 const EventList: React.FC = () => {
   const [filters, setFilters] = useState({
@@ -52,6 +91,7 @@ const EventList: React.FC = () => {
   const [editMode, setEditMode] = useState(false);
   const [viewEvent, setViewEvent] = useState<Event | null>(null);
   const [viewModalOpen, setViewModalOpen] = useState(false);
+  const [tabValue, setTabValue] = useState(0);
   
   const { data, isLoading, isError, error } = useEvents(filters);
   const deleteMutation = useDeleteEvent();
@@ -86,6 +126,7 @@ const EventList: React.FC = () => {
   const handleViewEvent = (event: Event) => {
     setViewEvent(event);
     setViewModalOpen(true);
+    setTabValue(0); // Reset tab to first one when opening a new event
   };
 
   const handleCloseDialog = () => {
@@ -96,6 +137,10 @@ const EventList: React.FC = () => {
   const handleCloseViewModal = () => {
     setViewModalOpen(false);
     setViewEvent(null);
+  };
+
+  const handleTabChange = (_event: React.SyntheticEvent, newValue: number) => {
+    setTabValue(newValue);
   };
 
   const formatDate = (dateString: string) => {
@@ -116,6 +161,15 @@ const EventList: React.FC = () => {
       default: return 'default';
     }
   };
+
+  // const getStatusIcon = (status: string) => {
+  //   switch (status) {
+  //     case 'going': return <CheckCircle color="success" />;
+  //     case 'interested': return <Favorite color="info" />;
+  //     case 'not_going': return <Cancel color="error" />;
+  //     default: return <People color="action" />;
+  //   }
+  // };
 
   if (isLoading) {
     return (
@@ -140,8 +194,6 @@ const EventList: React.FC = () => {
     current_page: 1,
     total_pages: 1,
   };
-
-
 
   return (
     <Box>
@@ -527,6 +579,104 @@ const EventList: React.FC = () => {
                       </Stack>
                     </Paper>
                   </Box>
+                </Box>
+
+                {/* RSVP Status Tabs */}
+                <Box sx={{ width: '100%', mt: 3 }}>
+                  <Typography variant="h6" gutterBottom color="primary">
+                    Attendees
+                  </Typography>
+                  <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
+                    <Tabs value={tabValue} onChange={handleTabChange} aria-label="RSVP status tabs">
+                      <Tab 
+                        icon={<Badge badgeContent={viewEvent.rsvp_counts.going} color="success" />}
+                        iconPosition="end"
+                        label="Going" 
+                        {...a11yProps(0)} 
+                      />
+                      <Tab 
+                        icon={<Badge badgeContent={viewEvent.rsvp_counts.interested} color="info" />}
+                        iconPosition="end"
+                        label="Interested" 
+                        {...a11yProps(1)} 
+                      />
+                      <Tab 
+                        icon={<Badge badgeContent={viewEvent.rsvp_counts.not_going} color="error" />}
+                        iconPosition="end"
+                        label="Not Going" 
+                        {...a11yProps(2)} 
+                      />
+                    </Tabs>
+                  </Box>
+                  <TabPanel value={tabValue} index={0}>
+                    <List>
+                      {viewEvent.rsvps.filter(rsvp => rsvp.status === 'going').map(rsvp => (
+                        <ListItem key={rsvp.user.id}>
+                          <ListItemAvatar>
+                            <Avatar>
+                              {rsvp.user.username.charAt(0).toUpperCase()}
+                            </Avatar>
+                          </ListItemAvatar>
+                          <ListItemText 
+                            primary={rsvp.user.username} 
+                            secondary={rsvp.user.email} 
+                          />
+                          <CheckCircle color="success" />
+                        </ListItem>
+                      ))}
+                      {viewEvent.rsvp_counts.going === 0 && (
+                        <Typography variant="body2" color="text.secondary" sx={{ py: 2, textAlign: 'center' }}>
+                          No attendees going to this event yet
+                        </Typography>
+                      )}
+                    </List>
+                  </TabPanel>
+                  <TabPanel value={tabValue} index={1}>
+                    <List>
+                      {viewEvent.rsvps.filter(rsvp => rsvp.status === 'interested').map(rsvp => (
+                        <ListItem key={rsvp.user.id}>
+                          <ListItemAvatar>
+                            <Avatar>
+                              {rsvp.user.username.charAt(0).toUpperCase()}
+                            </Avatar>
+                          </ListItemAvatar>
+                          <ListItemText 
+                            primary={rsvp.user.username} 
+                            secondary={rsvp.user.email} 
+                          />
+                          <Favorite color="info" />
+                        </ListItem>
+                      ))}
+                      {viewEvent.rsvp_counts.interested === 0 && (
+                        <Typography variant="body2" color="text.secondary" sx={{ py: 2, textAlign: 'center' }}>
+                          No interested attendees yet
+                        </Typography>
+                      )}
+                    </List>
+                  </TabPanel>
+                  <TabPanel value={tabValue} index={2}>
+                    <List>
+                      {viewEvent.rsvps.filter(rsvp => rsvp.status === 'not_going').map(rsvp => (
+                        <ListItem key={rsvp.user.id}>
+                          <ListItemAvatar>
+                            <Avatar>
+                              {rsvp.user.username.charAt(0).toUpperCase()}
+                            </Avatar>
+                          </ListItemAvatar>
+                          <ListItemText 
+                            primary={rsvp.user.username} 
+                            secondary={rsvp.user.email} 
+                          />
+                          <Cancel color="error" />
+                        </ListItem>
+                      ))}
+                      {viewEvent.rsvp_counts.not_going === 0 && (
+                        <Typography variant="body2" color="text.secondary" sx={{ py: 2, textAlign: 'center' }}>
+                          No attendees have declined this event
+                        </Typography>
+                      )}
+                    </List>
+                  </TabPanel>
                 </Box>
 
                 <Box display="flex" gap={1} mt={3}>
