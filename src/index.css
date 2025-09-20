@@ -1,11 +1,11 @@
-@import "tailwindcss";
-@custom-variant dark (&:where(.dark, .dark *));
+  @import "tailwindcss";
+  @custom-variant dark (&:where(.dark, .dark *));
 
-*{
-  @apply transition-colors duration-500;
-}
-body {
-  font-family: 'Poppins', sans-serif;
-  background-color: #f8fafc;
-  transition: background-color 0.5s cubic-bezier(0.4, 0, 0.2, 1), color 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-}
+  *{
+    @apply transition-colors duration-500;
+  }
+  body {
+    font-family: 'Poppins', sans-serif;
+    background-color: #f8fafc;
+    transition: background-color 0.5s cubic-bezier(0.4, 0, 0.2, 1), color 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  }

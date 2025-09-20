@@ -81,8 +81,8 @@ const menuItems = [
   {
     label: 'Moderation',
     icon: <GavelIcon fontSize="small" />,
-    to: routes.admin.moderation.posts,
-    match: routes.admin.moderation.posts,
+    to: routes.admin.posts.reported,
+    match: routes.admin.posts.reported
   },
 ];
 

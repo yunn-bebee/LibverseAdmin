@@ -18,6 +18,10 @@ export interface User {
   profile: UserProfile;
   createdAt: string;
   updatedAt: string;
+  forum_status?:{
+    status: 'approved' | 'pending' | 'rejected';
+    approved_at: string | null;
+  } // for forum membership status  
 }
 
 export interface Book {
@@ -46,6 +50,8 @@ export interface Report {
 }
 
 export interface Post {
+ 
+  flag_reason: string | undefined;
   id: number;
   uuid: string;
   content: string;
@@ -66,8 +72,6 @@ export interface Post {
   is_saved: boolean;
   created_at: string;
   updated_at: string;
-
-  // Only present if user has admin/moderator role
   reports?: Report[];
 }
 
@@ -98,6 +102,7 @@ export interface Forum {
   created_by: { id: number; name: string };
   book?: { id: number; title: string };
   threads_count: number;
+  participants_count: number;
   created_at: string;
   updated_at: string;
 }

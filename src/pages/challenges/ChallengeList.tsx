@@ -63,7 +63,7 @@ const ChallengeList: React.FC = () => {
     if (window.confirm('Are you sure you want to delete this challenge?')) {
       deleteChallenge.mutate(id, {
         onSuccess: () => toast.success('Challenge deleted successfully'),
-        onError: () => toast.error('Failed to delete challenge'),
+        onError: (err) => toast.error(`Failed to delete challenge: ${err.message}`),
       });
     }
   };

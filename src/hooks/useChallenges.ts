@@ -197,4 +197,59 @@ export function useDeleteBadge() {
       queryClient.invalidateQueries({ queryKey: ['badges'] });
     },
   });
+  
+}
+export function useChallengeBooks(challengeId: string, params: { page?: number; per_page?: number } = {}) {
+  return useQuery({
+    queryKey: ['challengeBooks', challengeId, params.page, params.per_page],
+    queryFn: () => challengeService.getBooks(challengeId, params),
+    enabled: !!challengeId,
+  });
+}
+export function useAddBookToChallenge() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ challengeId, bookId }: { challengeId: string; bookId: string }) =>
+      challengeService.addBookToChallenge(challengeId, bookId),
+    onSuccess: (_, { challengeId }) => {
+      queryClient.invalidateQueries({ queryKey: ['challengeBooks', challengeId] });
+    },
+  });
+}
+
+export function useRemoveBookFromChallenge() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ challengeId, bookId }: { challengeId: string; bookId: string }) =>
+      challengeService.removeBookFromChallenge(challengeId, bookId),
+    onSuccess: (_, { challengeId }) => {
+      queryClient.invalidateQueries({ queryKey: ['challengeBooks', challengeId] });
+    },
+  });
+}
+
+export function useAddUserBookToChallenge() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ challengeId, userId, bookId, status }: { challengeId: string; userId: string; bookId: string; status: string }) =>
+      challengeService.addUserBookToChallenge(challengeId, userId, bookId, status),
+    onSuccess: (_, { challengeId, userId }) => {
+      queryClient.invalidateQueries({ queryKey: ['challengeParticipants', challengeId] });
+      queryClient.invalidateQueries({ queryKey: ['challenge-progress', challengeId] });
+      queryClient.invalidateQueries({ queryKey: ['userProgress', challengeId, userId] });
+    },
+  });
+}
+
+export function useRemoveUserBookFromChallenge() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ challengeId, userId, bookId }: { challengeId: string; userId: string; bookId: string }) =>
+      challengeService.removeUserBookFromChallenge(challengeId, userId, bookId),
+    onSuccess: (_, { challengeId, userId }) => {
+      queryClient.invalidateQueries({ queryKey: ['challengeParticipants', challengeId] });
+      queryClient.invalidateQueries({ queryKey: ['challenge-progress', challengeId] });
+      queryClient.invalidateQueries({ queryKey: ['userProgress', challengeId, userId] });
+    },
+  });
 }

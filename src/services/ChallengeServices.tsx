@@ -2,6 +2,7 @@ import { url } from "../app/url";
 import type { ReadingChallenge as Challenge, ChallengeProgress, LeaderboardEntry, ChallengeFilters , Badge } from "../app/types/readingChallenge";
 import type { PaginatedResponse, UserStats } from "../app/types/user";
 import { getData, postData, putData, deleteData, getDatawithMetaData, uploadMultimedia, updateMultimedia } from "../app/api";
+import type { Book } from "../app/types/book";
 
 
 
@@ -61,8 +62,11 @@ export const challengeService = {
     return response.data;
   },
 
-  addBookToChallenge: async (challengeId: string, bookId: string, status: string): Promise<void> => {
-    await postData(url.challenge.addBook(challengeId), { book_id: bookId, status });
+  addUserBookToChallenge: async (challengeId: string, userId: string, bookId: string, status: string): Promise<void> => {
+    await postData(url.challenge.addUserBook(challengeId , userId), { book_id: bookId, status});
+  },
+  removeUserBookFromChallenge: async (challengeId: string, userId: string, bookId: string): Promise<void> => {
+    await deleteData(url.challenge.removeUserBook(challengeId, userId, bookId));
   },
 
   updateBookStatus: async (recordId: string, status: string, rating?: number, review?: string): Promise<void> => {
@@ -140,5 +144,20 @@ export const challengeService = {
 
   deleteBadge: async (id: string): Promise<void> => {
     await deleteData(url.badge.destroy(id));
+  },
+    addBookToChallenge: async (challengeId: string, bookId: string): Promise<void> => {
+    await postData(url.challenge.addBook(challengeId), { book_id: bookId });
+  },
+
+  removeBookFromChallenge: async (challengeId: string, bookId: string): Promise<void> => {
+    await deleteData(url.challenge.removeBook(challengeId, bookId));
+  },
+
+    getBooks: async (challengeId: string, params: { page?: number; per_page?: number } = {}): Promise<PaginatedResponse<Book>> => {
+    const queryParams = new URLSearchParams();
+    if (params.page) queryParams.append('page', params.page.toString());
+    if (params.per_page) queryParams.append('per_page', params.per_page.toString());
+    const response = await getDatawithMetaData<Book[]>(`${url.challenge.addBook(challengeId)}?${queryParams.toString()}`);
+    return response;
   },
 };

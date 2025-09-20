@@ -30,17 +30,28 @@ export const url = {
     destroy: (bookId: string) => `${app_base_url}/book/${bookId}`,
   },
 
-  challenge: {
+    challenge: {
     index: `${app_base_url}/challenges`,
-    store: `${app_base_url}/challenges`,
+    store: `${app_base_url}/admin/challenges`,
     show: (challengeId: string) => `${app_base_url}/challenges/${challengeId}`,
-    update: (challengeId: string) => `${app_base_url}/challenges/${challengeId}`,
-    destroy: (challengeId: string) => `${app_base_url}/challenges/${challengeId}`,
+    update: (challengeId: string) => `${app_base_url}/admin/challenges/${challengeId}`,
+    destroy: (challengeId: string) => `${app_base_url}/admin/challenges/${challengeId}`,
     join: (challengeId: string) => `${app_base_url}/challenges/${challengeId}/join`,
-    addBook: (challengeId: string) => `${app_base_url}/challenges/${challengeId}/add-book`,
-    updateBook: (recordId: string) => `${app_base_url}/challenges/books/${recordId}`,
+    books: (challengeId: string) => `${app_base_url}/challenges/${challengeId}/books`,
+    addBook: (challengeId: string) => `${app_base_url}/admin/challenges/${challengeId}/books`,
+    removeBook: (challengeId: string, bookId: string) => `${app_base_url}/admin/challenges/${challengeId}/books/${bookId}`,
+    addUserBook: (challengeId: string, userId: string) => `${app_base_url}/admin/challenges/${challengeId}/users/${userId}/books`,
+    removeUserBook: (challengeId: string, userId: string, bookId: string) => `${app_base_url}/admin/challenges/${challengeId}/users/${userId}/books/${bookId}`,
+    updateBook: (recordId: string) => `${app_base_url}/challenges/books/${recordId}/status`,
     progress: (challengeId: string) => `${app_base_url}/challenges/${challengeId}/progress`,
     leaderboard: (challengeId: string) => `${app_base_url}/challenges/${challengeId}/leaderboard`,
+    participants: (challengeId: string) => `${app_base_url}/admin/challenges/${challengeId}/users`,
+    bulkUpdate: `${app_base_url}/admin/challenges/bulk-update`,
+    removeUser: (challengeId: string, userId: string) => `${app_base_url}/admin/challenges/${challengeId}/users/${userId}`,
+    resetProgress: (challengeId: string, userId: string) => `${app_base_url}/admin/challenges/${challengeId}/users/${userId}/reset`,
+    awardBadge: (userId: string) => `${app_base_url}/admin/users/${userId}/badges`,
+    revokeBadge: (userId: string, badgeId: string) => `${app_base_url}/admin/users/${userId}/badges/${badgeId}`,
+    stats: `${app_base_url}/admin/challenges/stats`,
   },
 
   event: {
@@ -60,16 +71,42 @@ export const url = {
     update: (forumId: string) => `${app_base_url}/forums/${forumId}`,
     destroy: (forumId: string) => `${app_base_url}/forums/${forumId}`,
     togglePublic: (forumId: string) => `${app_base_url}/forums/${forumId}/toggle-public`,
+    join: (forumId: string) => `${app_base_url}/forums/${forumId}/join`,
+    leave: (forumId: string) => `${app_base_url}/forums/${forumId}/leave`,
+    members: (forumId: string) => `${app_base_url}/forums/${forumId}/members`,
+    approveJoin: (forumId: string) => `${app_base_url}/forums/${forumId}/approve-join`,
+    rejectJoin: (forumId: string) => `${app_base_url}/forums/${forumId}/reject-join`,
+    activityFeed: `${app_base_url}/activity-feed`,
+    
     threads: {
       index: (forumId: string) => `${app_base_url}/forums/${forumId}/threads`,
       store: (forumId: string) => `${app_base_url}/forums/${forumId}/threads`,
+      show: (threadId: string) => `${app_base_url}/threads/${threadId}`,
+      update: (threadId: string) => `${app_base_url}/threads/${threadId}`,
+      destroy: (threadId: string) => `${app_base_url}/threads/${threadId}`,
       togglePin: (forumId: string, threadId: string) =>
         `${app_base_url}/forums/${forumId}/threads/${threadId}/toggle-pin`,
       toggleLock: (forumId: string, threadId: string) =>
         `${app_base_url}/forums/${forumId}/threads/${threadId}/toggle-lock`,
-      show: (threadId: string) => `${app_base_url}/threads/${threadId}`,
-      posts: (threadId: string) => `${app_base_url}/threads/${threadId}/posts`,
     },
+  },
+
+  posts: {
+    index: (threadId: string) => `${app_base_url}/threads/${threadId}/posts`,
+    store: (threadId: string) => `${app_base_url}/threads/${threadId}/posts`,
+    show: (postId: string) => `${app_base_url}/posts/${postId}`,
+    update: (postId: string) => `${app_base_url}/posts/${postId}`,
+    destroy: (postId: string) => `${app_base_url}/posts/${postId}`,
+    like: (postId: string) => `${app_base_url}/posts/${postId}/like`,
+    save: (postId: string) => `${app_base_url}/posts/${postId}/save`,
+    comment: (postId: string) => `${app_base_url}/posts/${postId}/comment`,
+    report: (postId: string) => `${app_base_url}/posts/${postId}/report`,
+    uploadMedia: (postId: string) => `${app_base_url}/posts/${postId}/media`,
+    updateMedia: (postId: string , mediaId:string) => `${app_base_url}/posts/${postId}/media/${mediaId}`,
+    deleteMedia: (postId: string , mediaId:string) => `${app_base_url}/posts/${postId}/media/${mediaId}`,
+    unflag: (postId: string) => `${app_base_url}/admin/posts/${postId}/unflag`,
+    flag: (postId: string) => `${app_base_url}/admin/posts/${postId}/flag`,
+    reported: `${app_base_url}/admin/reported-posts`,
   },
 
   notification: {
@@ -80,20 +117,6 @@ export const url = {
     clearAll: `${app_base_url}/notifications`,
     destroy: (id: string) => `${app_base_url}/notifications/${id}`,
     markAsRead: (id: string) => `${app_base_url}/notifications/${id}/read`,
-  },
-
-  posts: {
-    show: (postId: string) => `${app_base_url}/posts/${postId}`,
-    update: (postId: string) => `${app_base_url}/posts/${postId}`,
-    destroy: (postId: string) => `${app_base_url}/posts/${postId}`,
-    like: (postId: string) => `${app_base_url}/posts/${postId}/like`,
-    save: (postId: string) => `${app_base_url}/posts/${postId}/save`,
-    comment: (postId: string) => `${app_base_url}/posts/${postId}/comment`,
-    report: (postId: string) => `${app_base_url}/posts/${postId}/report`,
-    unflag: (postId: string) => `${app_base_url}/admin/posts/${postId}/unflag`,
-    flag: (postId: string) => `${app_base_url}/admin/posts/${postId}/flag`,
-    uploadMedia: (postId: string) => `${app_base_url}/posts/${postId}/media`,
-    reported: `${app_base_url}/admin/reported-posts`,
   },
 
   profile: {

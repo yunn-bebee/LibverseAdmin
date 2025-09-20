@@ -1,13 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
-import { useCreateChallenge, useUpdateChallenge, useChallenge } from '../../hooks/useChallenges';
+import { useCreateChallenge, useUpdateChallenge, useChallenge, useBadges } from '../../hooks/useChallenges';
 import { routes } from '../../app/route';
-import type { ReadingChallenge as Challenge } from '../../app/types/readingChallenge';
-import { getDatawithMetaData } from '../../app/api';
+import type { Badge, ReadingChallenge as Challenge } from '../../app/types/readingChallenge';
 
-interface Badge { id: string; name: string; image_url: string }
-interface Book { id: string; title: string; author: string; cover_image: string }
+import { useBooks } from '../../hooks/useBooks';
+
 
 const ChallengeForm: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -18,18 +16,10 @@ const ChallengeForm: React.FC = () => {
   const { data: challenge, isLoading: isChallengeLoading, isError: isChallengeError, error: challengeError } = useChallenge(id || '');
   
   // Fetch badges and books
-  const { data: badgesData, isLoading: isBadgesLoading } = useQuery({
-    queryKey: ['badges'],
-    queryFn: () => getDatawithMetaData<Badge[]>('/api/v1/badges'),
-    select: (response) => response.data,
-  });
-  const { data: booksData, isLoading: isBooksLoading } = useQuery({
-    queryKey: ['books'],
-    queryFn: () => getDatawithMetaData<Book[]>('/api/v1/books?per_page=100'),
-    select: (response) => response.data,
-  });
-
+  const { data: rawBadges, isLoading: isBadgesLoading } = useBadges(10000000);
+  const { data: booksData, isLoading: isBooksLoading } = useBooks();
   // Form state
+  const badgesData = Array.isArray(rawBadges?.data) ? rawBadges.data : [];
   const [formData, setFormData] = useState<Partial<Challenge>>({
     name: '',
     description: '',
@@ -57,7 +47,7 @@ const ChallengeForm: React.FC = () => {
         end_date: new Date(challenge.end_date).toISOString().split('T')[0],
         is_active: challenge.is_active,
         badge_id: challenge.badge?.id || '',
-        book_ids: challenge.suggested_books?.map((book) => book.id) || [],
+        book_ids: challenge.suggested_books?.map((book) => book.id.toString()) || [],
       });
     }
   }, [challenge, isEditMode]);
@@ -228,7 +218,7 @@ const ChallengeForm: React.FC = () => {
             disabled={isLoading || isBadgesLoading}
           >
             <option value="">Select a badge (optional)</option>
-            {badges.map((badge) => (
+            {badges.map((badge: Badge) => (
               <option key={badge.id} value={badge.id}>{badge.name}</option>
             ))}
           </select>
