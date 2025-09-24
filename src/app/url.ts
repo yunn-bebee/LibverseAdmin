@@ -104,9 +104,9 @@ export const url = {
     uploadMedia: (postId: string) => `${app_base_url}/posts/${postId}/media`,
     updateMedia: (postId: string , mediaId:string) => `${app_base_url}/posts/${postId}/media/${mediaId}`,
     deleteMedia: (postId: string , mediaId:string) => `${app_base_url}/posts/${postId}/media/${mediaId}`,
-    unflag: (postId: string) => `${app_base_url}/admin/posts/${postId}/unflag`,
-    flag: (postId: string) => `${app_base_url}/admin/posts/${postId}/flag`,
-    reported: `${app_base_url}/admin/reported-posts`,
+    unflag: (postId: string) => `${app_base_url}/posts/admin/posts/${postId}/unflag`,
+    flag: (postId: string) => `${app_base_url}/posts/admin/posts/${postId}/flag`,
+    reported: `${app_base_url}/posts/admin/reported-posts`,
   },
 
   notification: {
