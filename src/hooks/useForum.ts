@@ -215,7 +215,7 @@ export function usePost(postId: string) {
 export function useCreatePost(threadId: string) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (data: ForumData) => 
+    mutationFn: (data: FormData) => 
       forumService.createPost(threadId, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['posts', threadId] });

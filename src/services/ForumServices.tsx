@@ -1,6 +1,6 @@
 import { url } from "../app/url";
 import type { Forum, Post, Thread, User } from "../app/types/forum";
-import { getData, postData, putData, deleteData, getDatawithMetaData, uploadMultimedia, type ApiResponse } from "../app/api";
+import { getData, postData, putData, deleteData, getDatawithMetaData, uploadMultimedia,  } from "../app/api";
 
 export const forumService = {
   // Forum methods
@@ -54,8 +54,8 @@ export const forumService = {
     params.append('page', filters.page.toString());
     params.append('per_page', filters.per_page.toString());
 
-    const response = await getDatawithMetaData<ApiResponse<User[]>>(url.forum.members(forumId)+`?${params.toString()}`);
-    return response.data;
+    const response = await getDatawithMetaData<User[]>(url.forum.members(forumId)+`?${params.toString()}`);
+    return response;
   },
 
   approveJoinRequest: async (forumId: string, userId: string): Promise<void> => {
