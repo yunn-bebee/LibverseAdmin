@@ -1,4 +1,3 @@
-import type { Book } from "./book";
 
 export interface ReadingChallenge {
   id: string;
@@ -25,7 +24,12 @@ export interface ReadingChallenge {
     id: string;
     name: string;
   };    
-  suggested_books?: Book[];
+  suggested_books?: Array<{
+    id: string;
+    title: string;
+    author: string;
+    cover_image: string;
+  }>;
 }
 export interface Badge {
         id: string;

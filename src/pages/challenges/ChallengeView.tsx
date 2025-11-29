@@ -31,7 +31,7 @@ import {
   Book as BookIcon,
   Person as PersonIcon,
 } from '@mui/icons-material';
-import { useChallenge, useDeleteChallenge, useChallengeProgress, useChallengeLeaderboard } from '../../hooks/useChallenges';
+import { useChallenge, useDeleteChallenge, useChallengeProgress, useChallengeLeaderboard, useChallengeBooks } from '../../hooks/useChallenges';
 import { routes } from '../../app/route';
 
 interface TabPanelProps {
@@ -65,9 +65,9 @@ const ChallengeView: React.FC = () => {
   const { data: challenge, isLoading, isError, error } = useChallenge(id || '');
   const { data: progress, isLoading: progressLoading } = useChallengeProgress(id || '');
   const { data: leaderboard, isLoading: leaderboardLoading } = useChallengeLeaderboard(id || '');
-
+  const {data:ChallengeBooks } =useChallengeBooks(id || '');
   const deleteMutation = useDeleteChallenge();
-
+ const ChallengeBookList = ChallengeBooks?.data;
   const handleTabChange = (_event: React.SyntheticEvent, newValue: number) => {
     setActiveTab(newValue);
   };
@@ -189,9 +189,10 @@ const ChallengeView: React.FC = () => {
 
         {/* Suggested Books Tab */}
         <TabPanel value={activeTab} index={0}>
-          {challenge.suggested_books && challenge.suggested_books.length > 0 ? (
+          
+          {ChallengeBookList && ChallengeBookList.length > 0 ? (
             <List>
-              {challenge.suggested_books.map((book) => (
+              {ChallengeBookList.map((book) => (
                 <ListItem key={book.id}>
                   <ListItemAvatar>
                     <Avatar>
